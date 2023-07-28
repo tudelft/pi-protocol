@@ -3,4 +3,7 @@
 tester: tester.c pi-protocol.h pi-messages.h
 	$(CC) tester.c -o tester
 
+clean : 
+	$(RM) tester
+
 	
