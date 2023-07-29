@@ -46,13 +46,12 @@ typedef enum {
     PI_MSG_RX_STATE_NONE
 } pi_msg_rx_state_t;
 
-// --- utilities ---
+
+// --- serializer ---
+#if (PI_MODE & PI_TX)
 #define PI_PAYLOAD_TO_BUFFER(_BUFFER, _PAYLOAD, _LEN) \
     memcpy((_BUFFER)+PI_ID_LEN, (const uint8_t *)( &(_PAYLOAD)), _LEN )
 
-#include "pi-messages.h"
-
-// --- serializer ---
 static inline void piSerialWrite(void (*serialWriter)(uint8_t byte), uint8_t * buf, uint16_t length)
 {
     serialWriter(PI_STX);
@@ -70,6 +69,10 @@ static inline void piSerialWrite(void (*serialWriter)(uint8_t byte), uint8_t * b
                 serialWriter(buf[i]);
         }
 }
+#endif
+
+// --- messages ---
+#include "pi-messages.h"
 
 // --- parser ---
 #if (PI_MODE & PI_RX)
@@ -136,6 +139,7 @@ static inline void piParse(uint8_t byte) {
 };
 
 #endif
+
 
 
 

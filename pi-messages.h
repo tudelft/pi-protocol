@@ -44,7 +44,7 @@ typedef struct __pi_IMU_t
 } __attribute__((packed)) pi_IMU_t;
 
 // TODO: macro to reduce boilerplate
-#if (PI_MSG_IMU_MODE & PI_MSG_RX)
+#if (PI_MODE & PI_RX) && (PI_MSG_IMU_MODE & PI_MSG_RX)
 pi_IMU_t piMsgImuA;
 pi_IMU_t piMsgImuB;
 pi_IMU_t* piMsgImu = NULL;
@@ -52,7 +52,7 @@ pi_msg_rx_state_t piMsgImuRxState = PI_MSG_RX_STATE_NONE;
 #endif
 
 // packing helper
-#if (PI_MSG_IMU_MODE & PI_MSG_TX)
+#if (PI_MODE & PI_TX) && (PI_MSG_IMU_MODE & PI_MSG_TX)
 static inline int pi_msg_IMU_pack(uint8_t* buf, uint32_t time_ms, float roll, float pitch, float yaw, float x, float y, float z)
 {
     buf[0] = PI_MSG_IMU_ID;
@@ -77,6 +77,7 @@ static inline int pi_msg_IMU_pack(uint8_t* buf, uint32_t time_ms, float roll, fl
 
 // -----
 // TODO: how to figure out if thisfunction is even needed at all (PI_MODE_RX set)
+#if (PI_MODE & PI_RX)
 static inline uint8_t piParseMsg(const uint8_t msgId, const uint8_t byte, const uint8_t byteCount) {
     static void * piMsgRxBuffer = NULL;
 
@@ -115,5 +116,6 @@ static inline uint8_t piParseMsg(const uint8_t msgId, const uint8_t byte, const 
     }
     return PI_PARSE_MSG_SUCCESS;
 }
+#endif
 
 #endif // PI_MESSAGES_H
