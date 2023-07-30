@@ -23,15 +23,18 @@ int main(int argc, char** argv) {
 
     int i = 0;
     while (i <= N) {
-        printf("Run %02d: TX: ", ++i);
-        // int len = piMsgImuPack(buf, i, i+2.f,0,0, 0,0,0);
-        int len = piMsgDummyMessagePack(buf, i, i+2.f,0);
+        printf("Run %02d, msg IMU: TX: ", ++i);
+        int len = piMsgImuPack(buf, i, i+2.f,0,0, 0,0,0);
         piSerialWrite(&dummyWriter, buf, len);
-#if PI_MODE & PI_RX
-#if PI_MSG_IMU_MODE & PI_MSG_RX
+
+        printf("\nRun %02d, msg DUMMY_MESSAGE: TX: ", i);
+        len = piMsgDummyMessagePack(buf, i, i+2.f,0);
+        piSerialWrite(&dummyWriter, buf, len);
+
+#if (PI_MODE & PI_RX) && (PI_MSG_IMU_MODE & PI_MSG_RX)
         // this if check should be equivalent to checking if piMsgImu is a NULL pointer
         // it is absolutely required. Otherwise there will be SegFaults if a message is read before it was received for the first time.
-        if (piMsgImuRxState > PI_MSG_RX_STATE_NONE) {
+        if (piMsgImuRxState < PI_MSG_RX_STATE_NONE) {
             printf("- RX: msg_id %02hhX, time: %d, R: %f, P: %f, Y: %f, x: %f, y: %f, z: %f.",
                 PI_MSG_IMU_ID,
                 piMsgImu->time_ms,
@@ -43,7 +46,6 @@ int main(int argc, char** argv) {
                 piMsgImu->z
                 );
         }
-#endif
 #endif
         printf("\n");
     }
