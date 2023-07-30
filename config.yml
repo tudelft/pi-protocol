@@ -1,0 +1,5 @@
+protocol_version: 1.0.0
+global_mode: RXTX
+include_messages:
+  IMU: {id: 1, mode: RXTX}
+  DUMMY_MESSAGE: {id: 2, mode: RXTX}
