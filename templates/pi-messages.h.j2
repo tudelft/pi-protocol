@@ -83,17 +83,15 @@ static inline uint8_t piParseIntoMsg(const uint8_t msgId, const uint8_t byte, co
 {% set piMsgB = piMsg+"B" %}
 #if ({{piMsgDefine}}_MODE & PI_MSG_RX)
         case {{piMsgDefine}}_ID:
-            if (byteCount == 0) {
+            if (byteCount == 0)
                 piMsgRxBuffer = ({{piMsg}}RxState > PI_MSG_RX_STATE_A) ? &{{piMsgA}} : &{{piMsgB}};
-            } else if (byteCount >= {{piMsgDefine}}_PAYLOAD_LEN) {
+            else if (byteCount >= {{piMsgDefine}}_PAYLOAD_LEN)
                 return PI_PARSE_MSG_EXCEEDS_MSG_PAYLOAD_LEN;
-            }
 
-            if (piMsgRxBuffer) {
+            if (piMsgRxBuffer)
                 *((uint8_t *)piMsgRxBuffer + byteCount) = byte;
-            } else {
+            else
                 return PI_PARSE_MSG_NULL_BUFFER;
-            }
 
             if (byteCount == ({{piMsgDefine}}_PAYLOAD_LEN - 1)) {
                 {{piMsg}}RxState = ({{piMsg}}RxState == PI_MSG_RX_STATE_A) ? PI_MSG_RX_STATE_B : PI_MSG_RX_STATE_A;
