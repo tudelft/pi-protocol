@@ -10,7 +10,7 @@
 
 void dummyWriter(uint8_t byte)
 {
-    printf("%02X ", byte);
+    printf("%02X ", byte); // implement your serialWrite function here
 #if (PI_MODE & PI_RX)
     piParse(byte);
 #endif
@@ -29,8 +29,9 @@ int main(int argc, char** argv) {
         piSerialWrite(&dummyWriter, buf, len);
 #if PI_MODE & PI_RX
 #if PI_MSG_IMU_MODE & PI_MSG_RX
-        // this if check should be equivalent to checkign if piMsgImu is a NULL pointer
-        if (piMsgImuRxState > PI_MSG_RX_STATE_NONE)
+        // this if check should be equivalent to checking if piMsgImu is a NULL pointer
+        // it is absolutely required. Otherwise there will be SegFaults if a message is read before it was received for the first time.
+        if (piMsgImuRxState > PI_MSG_RX_STATE_NONE) {
             printf("- RX: msg_id %02hhX, time: %d, R: %f, P: %f, Y: %f, x: %f, y: %f, z: %f.",
                 PI_MSG_IMU_ID,
                 piMsgImu->time_ms,
@@ -41,6 +42,7 @@ int main(int argc, char** argv) {
                 piMsgImu->y,
                 piMsgImu->z
                 );
+        }
 #endif
 #endif
         printf("\n");

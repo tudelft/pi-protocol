@@ -1,0 +1,3 @@
+Jinja2==3.0.3
+PyYAML==6.0.1
+semver==3.0.1

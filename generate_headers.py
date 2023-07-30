@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
 
+# packages
 import yaml
 try:
     from yaml import CLoader as Loader, CDumper as Dumper
@@ -10,10 +10,10 @@ from jinja2 import Environment, FileSystemLoader
 import os
 import re
 import semver
+from argparse import ArgumentParser
 
+# constants
 MSGS_DIR = "msgs"
-CONFIG_FILE_STEM = "config"
-CONFIG_FILE_REGEX = re.compile(rf"{CONFIG_FILE_STEM}.y[a]?ml")
 
 # beun: parse ID and PAYLOAD limits from protocol.h.j2
 for line in open("pi-protocol.h.j2").readlines():
@@ -37,7 +37,16 @@ DATATYPE_LENGTHS = {
     'double': 8,
 }
 
+
+
 if __name__ == "__main__":
+    # parse arguemnts 
+    parser = ArgumentParser()
+    parser.add_argument("config")
+    args = parser.parse_args()
+
+    configFile = args.config
+
     # for checking duplicate ids
     id_list = [] 
 
@@ -45,11 +54,9 @@ if __name__ == "__main__":
     data = {}
 
     # load msgList
-    configCandidates = [x for x in os.listdir() \
-                if CONFIG_FILE_REGEX.match(x)]
-    if len(configCandidates) != 1:
-        raise ValueError(f"Exactly one file {CONFIG_FILE_STEM}.yaml or {CONFIG_FILE_STEM}.yml must be present in root directory")
-    config = yaml.load(open(configCandidates[0], 'r'), Loader)
+    if configFile not in os.listdir():
+        raise ValueError(f"{configFile} does not exist in directory {os.getcwd()}")
+    config = yaml.load(open(configFile, 'r'), Loader)
 
     # parse version number string
     config['version'] = {}
