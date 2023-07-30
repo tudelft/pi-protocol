@@ -26,7 +26,7 @@ There are no checksums for speed and simplicity, so probably enabling the UART p
 Tested on Ubuntu 22.04. Install `make`, `python3`, `pip` and then the required python modules for generation
 ```bash
 sudo apt install make python3 python3-pip
-pip install -r requirements.txt # or try with sudo pip, depending on your venv setup
+pip install -r python/requirements.txt # or try with sudo pip, depending on your venv setup
 ```
 
 ### Generate!
@@ -42,7 +42,7 @@ make clean && make CONFIG=config.yaml
 You need `gcc` installed, then do
 
 ```bash
-make cleab && make tester CONFIG=config.yaml && ./tester
+make clean && make tester CONFIG=config.yaml && ./tester
 ```
 
 ## Usage in your project

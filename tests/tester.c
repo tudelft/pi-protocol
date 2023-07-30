@@ -3,8 +3,8 @@
  */
 
 #include <stdio.h>
-#include "pi-protocol.h"
-#include "pi-messages.h"
+#include "../pi-protocol.h"
+#include "../pi-messages.h"
 
 #define PI_DEBUG
 
