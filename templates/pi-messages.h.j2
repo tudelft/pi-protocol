@@ -87,13 +87,7 @@ static inline uint8_t piParseIntoMsg(const uint8_t msgId, const uint8_t byte, co
                 piMsgRxBuffer = ({{piMsg}}RxState > PI_MSG_RX_STATE_A) ? &{{piMsgA}} : &{{piMsgB}};
             else if (byteCount >= {{piMsgDefine}}_PAYLOAD_LEN)
                 return PI_PARSE_MSG_EXCEEDS_MSG_PAYLOAD_LEN;
-
-            if (piMsgRxBuffer)
-                *((uint8_t *)piMsgRxBuffer + byteCount) = byte;
-            else
-                return PI_PARSE_MSG_NULL_BUFFER;
-
-            if (byteCount == ({{piMsgDefine}}_PAYLOAD_LEN - 1)) {
+            else if (byteCount == ({{piMsgDefine}}_PAYLOAD_LEN - 1)) {
                 {{piMsg}}RxState = ({{piMsg}}RxState == PI_MSG_RX_STATE_A) ? PI_MSG_RX_STATE_B : PI_MSG_RX_STATE_A;
                 {{piMsg}} = ({{piMsg}}RxState == PI_MSG_RX_STATE_A) ? &{{piMsgA}} : &{{piMsgB}};
             }
@@ -103,6 +97,11 @@ static inline uint8_t piParseIntoMsg(const uint8_t msgId, const uint8_t byte, co
         default:
             return PI_PARSE_MSG_NO_SUCH_MSG;
     }
+
+    if (piMsgRxBuffer)
+        *((uint8_t *)piMsgRxBuffer + byteCount) = byte;
+    else
+        return PI_PARSE_MSG_NULL_BUFFER;
 
     return PI_PARSE_MSG_SUCCESS;
 }

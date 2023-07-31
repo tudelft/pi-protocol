@@ -28,7 +28,7 @@ C_FLAGS += -O3
 endif
 
 tester: tests/tester.c pi-protocol.h pi-messages.h
-	$(CC) -g tests/tester.c -o tester
+	$(CC) $(C_FLAGS) -g tests/tester.c -o tester
 
 clean : 
 	$(RM) tester
