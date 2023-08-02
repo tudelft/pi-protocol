@@ -142,11 +142,13 @@ static inline void piParse(uint8_t byte) {
     static pi_parse_state_t piState = PI_IDLE;
     static uint8_t msgId = PI_MSG_NONE_ID;
     static uint8_t byteCount = 0;
-    static pi_parse_msg_result_t msgParseResult = PI_PARSE_MSG_SUCCESS;
+    static pi_parse_msg_result_t msgParseResult = PI_PARSE_MSG_NO_ERROR;
 
     if (byte == PI_STX) {
 #ifdef PI_STATS
         piStats[PI_STX_COUNT]++;
+        if (msgParseResult == PI_PARSE_MSG_SUCCESS)
+            piStats[PI_SUCCESS]++;
 #endif
         piEscHit = false;
         piState = PI_STX_FOUND;
@@ -196,21 +198,18 @@ static inline void piParse(uint8_t byte) {
         case PI_ID_FOUND:
             // payload time
             msgParseResult = piParseIntoMsg(msgId, byte, byteCount++);
-#ifdef PI_STATS
-            if (msgParseResult > PI_PARSE_MSG_NO_ERROR)
-                /* either a messages has finished parsing (SUCCESS), or a fault
-                   occured. The reason we only reset to PI_IDLE here is to make
-                   sure any additional non STX bit triggers a
-                   PI_PARSE_MSG_EXCEEDS_MSG_LEN error and is listed in the 
-                   stats.*/
-                piStats[msgParseResult]++;
-#endif
+            /* No success handling here, because we require an STX
+               next, otherwise it's not actually success, but EXCEED_MSG_LEN
+               */
             if (msgParseResult > PI_PARSE_MSG_SUCCESS) {
 #ifdef PI_DEBUG
                 printf("\n msgParseResult > PI_PARSE_MSG_SUCCESS at id 0x%02hhX, byte 0x%02hhX: %d\n", msgId, byte, msgParseResult);
-#endif
                 msgId = PI_MSG_NONE_ID;
                 piState = PI_IDLE;
+#endif
+#ifdef PI_STATS
+                piStats[msgParseResult]++;
+#endif
             }
             break;
     }
