@@ -13,8 +13,9 @@ import semver
 from argparse import ArgumentParser, ArgumentError
 
 # constants
-MSGS_DIR = "msgs"
-TEMPLATES_DIR = "templates"
+BASE_DIR = os.path.join(os.path.dirname(__file__), "..")
+MSGS_DIR = os.path.join(BASE_DIR, "msgs")
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 
 # beun: parse ID and PAYLOAD limits from protocol.h.j2
 for line in open(os.path.join(TEMPLATES_DIR, "pi-protocol.h.j2")).readlines():
@@ -33,22 +34,28 @@ DATATYPE_LENGTHS = {
     'uint16_t': 2,
     'uint32_t': 4,
     'uint64_t': 8,
+    'int8_t': 1,
+    'int16_t': 2,
+    'int32_t': 4,
+    'int64_t': 8,
     # 'short': 2, # may work on aarch64 with gcc: https://gcc.gnu.org/onlinedocs/gcc/Half-Precision.html
     'float': 4,
     'double': 8,
 }
 
 
-
 if __name__ == "__main__":
     # parse arguemnts 
     parser = ArgumentParser()
-    parser.add_argument("config")
+    parser.add_argument("config", help="Must be a y(a)ml file in the same dir as this script.")
     parser.add_argument("--protocol-only", required=False, action="store_true", default=False)
     parser.add_argument("--messages-only", required=False, action="store_true", default=False)
+    parser.add_argument("--output-dir", required=False, help="Store generated headers here and not next to this script.")
 
     args = parser.parse_args()
     configFile = args.config
+
+    outputPath = args.output_dir if args.output_dir is not None else BASE_DIR
 
     if args.protocol_only and args.messages_only:
         raise ArgumentError("Use none or one of --protocol-only or --messages-only, but not both")
@@ -60,9 +67,9 @@ if __name__ == "__main__":
     data = {}
 
     # load msgList
-    if configFile not in os.listdir():
-        raise ValueError(f"{configFile} does not exist in directory {os.getcwd()}")
-    config = yaml.load(open(configFile, 'r'), Loader)
+    if configFile not in os.listdir(BASE_DIR):
+        raise ValueError(f"{configFile} does not exist in {BASE_DIR}")
+    config = yaml.load(open(os.path.join(BASE_DIR, configFile), 'r'), Loader)
 
     # parse version number string
     config['version'] = {}
@@ -74,10 +81,10 @@ if __name__ == "__main__":
     # check id range and duplicates
     for _, msg in config['include_messages'].items():
         if msg['id'] in id_list:
-            raise ValueError(f"Your {CONFIG_FILE_STEM}.y(a)ml contains messages with duplicate ids!")
+            raise ValueError(f"Your {configFile} contains messages with duplicate ids!")
         id_list.append(msg['id'])
         if (msg['id'] < 0x00) or (msg['id'] > PI_MSG_MAX_ID):
-            raise ValueError(f"Your {CONFIG_FILE_STEM}.y(a)ml contains messages with ids outside the range 0x00 and PI_MSG_MAX_ID ({PI_MSG_MAX_ID:#x})!")
+            raise ValueError(f"Your {configFile} contains messages with ids outside the range 0x00 and PI_MSG_MAX_ID ({PI_MSG_MAX_ID:#x})!")
 
     # load definition of all required messages and calculate payload length
     msgs = []
@@ -87,7 +94,7 @@ if __name__ == "__main__":
                         if re.compile(rf'{msgNAME}.y[a]?ml').match(x)]
 
         if len(msgCandidates) != 1:
-            raise ValueError(f"Your {CONFIG_FILE_STEM}.y(a)ml requires you to provide exactly one file {msgNAME}.yaml or {msgNAME}.yml in {MSGS_DIR}")
+            raise ValueError(f"Your {configFile} requires you to provide exactly one file {msgNAME}.yaml or {msgNAME}.yml in {MSGS_DIR}")
 
         # load yaml definition
         msgDefinition = yaml.load(
@@ -99,13 +106,17 @@ if __name__ == "__main__":
         msgDefinition['nameCamelCase'] = \
             msgNAME.replace("_"," ").title().replace(" ","")
 
-        # calculate payload name
+        # calculate payload length in bytes
         msgDefinition['payloadLen'] = 0
         for field, dtype in msgDefinition['fields'].items():
             msgDefinition['payloadLen'] += DATATYPE_LENGTHS[dtype]
 
         if msgDefinition['payloadLen'] > PI_MSG_MAX_PAYLOAD_LEN:
             raise ValueError(f"Sum of payload bytes of message definition {os.path.join(MSGS_DIR,msgNAME)}.y(a)ml exceed PI_MSG_MAX_PAYLOAD_LEN ({PI_MSG_MAX_PAYLOAD_LEN:#x})")
+
+        # find longest field string (for pretty message printing)
+        msgDefinition['maxFieldStringLen'] = \
+            max(len(item) for item in msgDefinition['fields'].keys())
 
         msgs.append(msgDefinition)
 
@@ -127,15 +138,13 @@ if __name__ == "__main__":
     messages_template = env.get_template('pi-messages.h.j2')
 
     if not args.messages_only:
-        with open("pi-protocol.h", 'w') as protocol_header:
+        filename = os.path.join(outputPath, "pi-protocol.h")
+        with open(filename, 'w') as protocol_header:
             print("Writing out protocol header...")
             protocol_header.write(protocol_template.render(data))
 
     if not args.protocol_only:
-        with open("pi-messages.h", 'w') as messages_header:
+        filename = os.path.join(outputPath, "pi-messages.h")
+        with open(filename, 'w') as messages_header:
             print("Writing out messages header...")
             messages_header.write(messages_template.render(data))
-
-
-
-
