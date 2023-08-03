@@ -85,10 +85,9 @@ typedef enum {
     PI_PARSE_MSG_NULL_BUFFER,
     PI_PARSE_MSG_NO_SUCH_MSG,
 } pi_parse_msg_result_t;
-#endif
 
 #ifdef PI_STATS
-// everything > PI_SUCCESS causes reset to PI_IDLE state.
+
 typedef enum {
     PI_SUCCESS = PI_PARSE_MSG_SUCCESS,
     PI_INVALID_ID = PI_PARSE_MSG_INVALID_ID,
@@ -101,7 +100,7 @@ typedef enum {
     NUM_PI_STATS_RESULT,
 } pi_stats_result_t;
 
-uint piStats[NUM_PI_STATS_RESULT] = {0,0,0,0,  0,0,0,0};
+unsigned int piStats[NUM_PI_STATS_RESULT] = {0,0,0,0,  0,0,0,0};
 
 const char* piStatsNames[NUM_PI_STATS_RESULT] = {
     "PI_SUCCESS",
@@ -114,7 +113,7 @@ const char* piStatsNames[NUM_PI_STATS_RESULT] = {
     "PI_STX_COUNT",
 };
 
-static void piPrintStats() {
+static inline void piPrintStats() {
     static int i = 0;
     printf("\n+------------ piPrintStats invokation %d -------------+\n", i++);
     printf("|%-30s|%-10s|\n", "Result", "Occurence");
@@ -123,7 +122,11 @@ static void piPrintStats() {
         printf("|%-30s|%-10d|\n", piStatsNames[i], piStats[i]);
     printf("|------------------------------|----------|\n");
 }
-#endif
+
+#endif // #ifdef PI_STATS
+
+#endif // #ifdef (PI_MODE & PI_RX)
+
 
 // --- messages ---
 #include "pi-messages.h"

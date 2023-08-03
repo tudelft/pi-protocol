@@ -6,8 +6,6 @@
 #include "../pi-protocol.h"
 #include "../pi-messages.h"
 
-#define PI_DEBUG
-
 void dummyWriter(uint8_t byte)
 {
     printf("%02X ", byte); // implement your serialWrite function here
@@ -46,6 +44,10 @@ int main(int argc, char** argv) {
                 piMsgImu->z
                 );
         }
+#endif
+#if (PI_MODE & PI_RX)
+        piPrintMsgs();
+        piPrintStats();
 #endif
         printf("\n");
     }
