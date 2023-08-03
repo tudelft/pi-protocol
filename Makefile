@@ -19,7 +19,7 @@ CC = gcc
 
 C_FLAGS = -Wall -Wpedantic -Werror -g -O0
 
-DEFINES = -DPI_USE_PRINT_MSG -DPI_STATS -DPI_DEBUG
+DEFINES = -DPI_USE_PRINT_MSGS -DPI_STATS -DPI_DEBUG
 
 tester: tests/tester.c pi-protocol.h pi-messages.h
 	$(CC) $(C_FLAGS) $(DEFINES) tests/tester.c -o tester

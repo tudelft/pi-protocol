@@ -46,8 +46,12 @@ int main(int argc, char** argv) {
         }
 #endif
 #if (PI_MODE & PI_RX)
-        piPrintMsgs();
+#ifdef PI_STATS
         piPrintStats();
+#endif
+#ifdef PI_USE_PRINT_MSGS
+        piPrintMsgs();
+#endif
 #endif
         printf("\n");
     }
