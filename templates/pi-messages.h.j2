@@ -80,16 +80,16 @@ __attribute__((unused)) static void piPrintMsg{{msg.nameCamelCase}}(int (* print
     {% set format_spec = '%u' %}
     {% set promoter = '' %}
 {% elif dtype.startswith('float') %}
-    {% set format_spec = '%f' %}
+    {% set format_spec = '%d' %}
     {% set promoter = '(double)' %}
 {% elif dtype.startswith('double') %}
-    {% set format_spec = '%f' %}
+    {% set format_spec = '%d' %}
     {% set promoter = '' %}
 {% else %}
     // jinja2 has no exception handling.. therefore
     {{ 0/0 }}
 {% endif %}
-        printer("    {{msg.nameSNAKE_CAPS}}.%-{{msg.maxFieldStringLen}}s: {{format_spec}}\n", "{{field}}", {{promoter}}{{piMsg}}->{{field}});
+        printer("    {{msg.nameSNAKE_CAPS}}.%s: {{format_spec}}\n", "{{field}}", {{promoter}}{{piMsg}}->{{field}});
 {% endfor %}
     } else {
         printer("    {{piMsg}} is NULL. Message likely not received yet.\n");
