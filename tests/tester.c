@@ -47,10 +47,10 @@ int main(int argc, char** argv) {
 #endif
 #if (PI_MODE & PI_RX)
 #ifdef PI_STATS
-        piPrintStats();
+        piPrintStats(&printf);
 #endif
 #ifdef PI_USE_PRINT_MSGS
-        piPrintMsgs();
+        piPrintMsgs(&printf);
 #endif
 #endif
         printf("\n");

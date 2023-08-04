@@ -8,6 +8,9 @@ extern "C" {
 #endif
 
 #include <stdint.h>
+#ifdef PI_USE_PRINT_MSGS
+#include <stdarg.h>
+#endif
 
 //--------------------------
 // ------ MESSAGES ---------
@@ -35,7 +38,7 @@ typedef struct __{{piMsgTypedef}}
 
 //packing helper
 #if (PI_MODE & PI_TX) && ({{piMsgDefine}}_MODE & PI_MSG_TX)
-static inline int {{piMsg}}Pack(
+__attribute__((unused)) static inline int {{piMsg}}Pack(
     uint8_t * buf,
 {% for field, dtype in msg.fields.items() %}
     {{dtype}} {{field}}
@@ -59,33 +62,37 @@ static inline int {{piMsg}}Pack(
 
 #if (PI_MODE & PI_RX) && ({{piMsgDefine}}_MODE & PI_MSG_RX)
 // allocations for the A-B parser
-{{piMsgTypedef}} {{piMsgA}};
-{{piMsgTypedef}} {{piMsgB}};
-{{piMsgTypedef}}* {{piMsg}} = NULL;
-pi_msg_rx_state_t {{piMsg}}RxState = PI_MSG_RX_STATE_NONE;
+static {{piMsgTypedef}} {{piMsgA}};
+static {{piMsgTypedef}} {{piMsgB}};
+static {{piMsgTypedef}}* {{piMsg}} = NULL;
+static pi_msg_rx_state_t {{piMsg}}RxState = PI_MSG_RX_STATE_NONE;
 
 //print function
 #if PI_USE_PRINT_MSGS
 
-static void piPrintMsg{{msg.nameCamelCase}}() {
+__attribute__((unused)) static void piPrintMsg{{msg.nameCamelCase}}(int (* printer)(const char* fmt, ...)) {
     if ({{piMsg}}) {
 {% for field, dtype in msg.fields.items() %}
 {% if dtype.startswith('int') %}
     {% set format_spec = '%d' %}
+    {% set promoter = '' %}
 {% elif dtype.startswith('uint') %}
     {% set format_spec = '%u' %}
+    {% set promoter = '' %}
 {% elif dtype.startswith('float') %}
     {% set format_spec = '%f' %}
+    {% set promoter = '(double)' %}
 {% elif dtype.startswith('double') %}
     {% set format_spec = '%f' %}
+    {% set promoter = '' %}
 {% else %}
     // jinja2 has no exception handling.. therefore
     {{ 0/0 }}
 {% endif %}
-        printf("    {{msg.nameSNAKE_CAPS}}.%-{{msg.maxFieldStringLen}}s: {{format_spec}}\n", "{{field}}", {{piMsg}}->{{field}});
+        printer("    {{msg.nameSNAKE_CAPS}}.%-{{msg.maxFieldStringLen}}s: {{format_spec}}\n", "{{field}}", {{promoter}}{{piMsg}}->{{field}});
 {% endfor %}
     } else {
-        printf("    {{piMsg}} is NULL. Message likely not received yet.\n");
+        printer("    {{piMsg}} is NULL. Message likely not received yet.\n");
     }
 }
 #endif // #ifdef PI_USE_PRINT_MSGS
@@ -97,7 +104,7 @@ static void piPrintMsg{{msg.nameCamelCase}}() {
 
 #if (PI_MODE & PI_RX)
 
-static inline pi_parse_msg_result_t piParseIntoMsg(const uint8_t msgId, const uint8_t byte, const uint8_t byteCount) {
+static pi_parse_msg_result_t piParseIntoMsg(const uint8_t msgId, const uint8_t byte, const uint8_t byteCount) {
     static void * piMsgRxBuffer = NULL;
     pi_parse_msg_result_t res = PI_PARSE_MSG_NO_ERROR;
 
@@ -141,14 +148,14 @@ static inline pi_parse_msg_result_t piParseIntoMsg(const uint8_t msgId, const ui
 }
 
 #ifdef PI_USE_PRINT_MSGS
-static inline void piPrintMsgs() {
+static inline void piPrintMsgs(int (*printer)(const char* s, ...)) {
     static int i = 1;
-    printf("\n+------------ piPrintMsgs invokation %d -------------+\n", i++);
+    printer("\n+------------ piPrintMsgs invokation %d -------------+\n", i++);
 {% for msg in msgs %}
 #if (PI_MSG_{{msg.nameSNAKE_CAPS}}_MODE & PI_MSG_RX)
-    printf("%s\n", "{{msg.nameCamelCase}}");
-    piPrintMsg{{msg.nameCamelCase}}();
-    printf("-----------\n");
+    printer("%s\n", "{{msg.nameCamelCase}}");
+    piPrintMsg{{msg.nameCamelCase}}(printer);
+    printer("-----------\n");
 #endif
 {% endfor %}
 }
