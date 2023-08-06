@@ -119,7 +119,7 @@ __attribute__((unused)) static void piPrintStats(int (*printer)(const char * s, 
     printer("|%-30s|%-10s|\n", "Result", "Occurence");
     printer("|------------------------------|----------|\n");
     for (int i=0; i < NUM_PI_STATS_RESULT; i++)
-        printer("|%-30s|%-10d|\n", piStatsNames[i], piStats[i]);
+        printer("|%-30s|%10d|\n", piStatsNames[i], piStats[i]);
     printer("|------------------------------|----------|\n");
 }
 
