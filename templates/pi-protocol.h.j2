@@ -97,10 +97,11 @@ typedef enum {
     PI_NO_SUCH_MSG = PI_PARSE_MSG_NO_SUCH_MSG,
     PI_ESC_ERROR,
     PI_STX_COUNT,
+    PI_PARSE_INVOKE,
     NUM_PI_STATS_RESULT,
 } pi_stats_result_t;
 
-static unsigned int piStats[NUM_PI_STATS_RESULT] = {0,0,0,0,  0,0,0,0};
+static unsigned int piStats[NUM_PI_STATS_RESULT] = {0,0,0,0,  0,0,0,0, 0};
 
 static const char* piStatsNames[NUM_PI_STATS_RESULT] = {
     "PI_SUCCESS",
@@ -111,6 +112,7 @@ static const char* piStatsNames[NUM_PI_STATS_RESULT] = {
     "PI_NO_SUCH_MSG",
     "PI_ESC_ERROR",
     "PI_STX_COUNT",
+    "PI_PARSE_INVOKE",
 };
 
 __attribute__((unused)) static void piPrintStats(int (*printer)(const char * s, ...)) {
@@ -119,7 +121,7 @@ __attribute__((unused)) static void piPrintStats(int (*printer)(const char * s, 
     printer("|%-30s|%-10s|\n", "Result", "Occurence");
     printer("|------------------------------|----------|\n");
     for (int i=0; i < NUM_PI_STATS_RESULT; i++)
-        printer("|%-30s|%10d|\n", piStatsNames[i], piStats[i]);
+        printer("|%30s|%10d|\n", piStatsNames[i], piStats[i]);
     printer("|------------------------------|----------|\n");
 }
 
@@ -146,6 +148,10 @@ __attribute__((unused)) static void piParse(uint8_t byte) {
     static uint8_t msgId = PI_MSG_NONE_ID;
     static uint8_t byteCount = 0;
     static pi_parse_msg_result_t msgParseResult = PI_PARSE_MSG_NO_ERROR;
+
+#ifdef PI_STATS
+    piStats[PI_PARSE_INVOKE]++;
+#endif
 
     if (byte == PI_STX) {
 #ifdef PI_STATS

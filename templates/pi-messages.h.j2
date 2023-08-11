@@ -149,7 +149,7 @@ static pi_parse_msg_result_t piParseIntoMsg(const uint8_t msgId, const uint8_t b
 
 #ifdef PI_USE_PRINT_MSGS
 static inline void piPrintMsgs(int (*printer)(const char* s, ...)) {
-    static int i = 1;
+    static int i = 0;
     printer("\n+------------ piPrintMsgs invokation %d -------------+\n", i++);
 {% for msg in msgs %}
 #if (PI_MSG_{{msg.nameSNAKE_CAPS}}_MODE & PI_MSG_RX)
