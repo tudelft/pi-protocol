@@ -6,7 +6,7 @@ PYTHON = /usr/bin/env python3 # TODO: is this portable?
 
 
 .DEFAULT_GOAL = generate
-generate : pi-protocol.h pi-messages.h pi-messages.c
+generate : src/pi-protocol.h src/pi-messages.h src/pi-messages.c
 
 src/pi-protocol.h : templates/pi-protocol.h.j2 python/generate.py config.yaml msgs/*.yaml
 	$(PYTHON) python/generate.py $(CONFIG) --protocol-h-only --output-dir src/
