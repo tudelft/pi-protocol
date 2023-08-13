@@ -52,4 +52,8 @@ Mkfile.old
 dkms.conf
 
 tester
-*.h
+src/*.h
+src/*.c
+!src/pi-protocol.c
+
+.vscode/

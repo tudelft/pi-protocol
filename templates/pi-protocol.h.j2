@@ -23,49 +23,28 @@ extern "C" {
 #define PI_ESC 0x01
 #define PI_STX_ESC 0x02
 #define PI_ESC_ESC 0x03
-#define PI_MSG_MAX_PAYLOAD_LEN 0x100
-#define PI_MSG_ID_LEN 1
-#define PI_MAX_PACKET_LEN (PI_MSG_MAX_PAYLOAD_LEN + PI_MSG_ID_LEN)
+#define PI_MSG_MAX_PAYLOAD_LEN 0xFF
+#define PI_MSG_ID_BYTES 1
+#define PI_MSG_PAYLOAD_LEN_BYTES 1
+#define PI_MAX_PACKET_LEN (PI_MSG_MAX_PAYLOAD_LEN + PI_MSG_ID_BYTES)
 
 // --- global mode ---
+#define PI_NONE 0
 #define PI_TX   1 << 0
 #define PI_RX   1 << 1
 #define PI_RXTX (PI_TX | PI_RX)
 
-// --- Message flags ---
-#define PI_MSG_NONE_ID 0xFF
-#define PI_MSG_MAX_ID 0xFE
-
-#define PI_MSG_NONE 0
-#define PI_MSG_TX   1 << 0
-#define PI_MSG_RX   1 << 1
-#define PI_MSG_RXTX (PI_MSG_TX | PI_MSG_RX)
-
 // --- Global mode config ---
 #define PI_MODE PI_{{ config.global_mode }}
 
+// --- Message flags ---
+#define PI_MSG_NONE_ID 0xFF
+#define PI_MSG_MAX_ID 0xFE
+#define PI_MSG_NUM {{ config.include_messages|length }} // unused, maybe in future
+
 // --- serializer ---
 #if (PI_MODE & PI_TX)
-#define PI_PAYLOAD_TO_BUFFER(_BUFFER, _PAYLOAD, _LEN) \
-    memcpy((_BUFFER)+PI_MSG_ID_LEN, (const uint8_t *)( &(_PAYLOAD)), _LEN )
-
-__attribute__((unused)) static inline void piSerialWrite(void (*serialWriter)(uint8_t byte), uint8_t * buf, uint16_t length)
-{
-    serialWriter(PI_STX);
-    for (int i = 0; i < length; i++)
-        switch(buf[i]) {
-            case PI_STX:
-                serialWriter(PI_ESC);
-                serialWriter(PI_STX_ESC);
-                break;
-            case PI_ESC:
-                serialWriter(PI_ESC);
-                serialWriter(PI_ESC_ESC);
-                break;
-            default:
-                serialWriter(buf[i]);
-        }
-}
+void piSendMsg(void * msg_raw, void (*serialWriter)(uint8_t byte));
 #endif
 
 // rx parsing states
@@ -77,6 +56,12 @@ typedef enum {
 } pi_msg_rx_state_t;
 
 typedef enum {
+    PI_IDLE,
+    PI_STX_FOUND,
+    PI_ID_FOUND
+} pi_parse_state_t;
+
+typedef enum {
     PI_PARSE_MSG_NO_ERROR = -1,
     PI_PARSE_MSG_SUCCESS,
     PI_PARSE_MSG_INVALID_ID,
@@ -86,8 +71,9 @@ typedef enum {
     PI_PARSE_MSG_NO_SUCH_MSG,
 } pi_parse_msg_result_t;
 
-#ifdef PI_STATS
+void piParse(uint8_t byte);
 
+#ifdef PI_STATS
 typedef enum {
     PI_SUCCESS = PI_PARSE_MSG_SUCCESS,
     PI_INVALID_ID = PI_PARSE_MSG_INVALID_ID,
@@ -101,9 +87,9 @@ typedef enum {
     NUM_PI_STATS_RESULT,
 } pi_stats_result_t;
 
-static unsigned int piStats[NUM_PI_STATS_RESULT] = {0,0,0,0,  0,0,0,0, 0};
+extern unsigned int piStats[NUM_PI_STATS_RESULT];
 
-static const char* piStatsNames[NUM_PI_STATS_RESULT] = {
+__attribute__((unused)) static const char* piStatsNames[NUM_PI_STATS_RESULT] = {
     "PI_SUCCESS",
     "PI_INVALID_ID",
     "PI_EXCEEDS_MAX_PAYLOAD_LEN",
@@ -115,120 +101,17 @@ static const char* piStatsNames[NUM_PI_STATS_RESULT] = {
     "PI_PARSE_INVOKE",
 };
 
-__attribute__((unused)) static void piPrintStats(int (*printer)(const char * s, ...)) {
-    static int i = 0;
-    printer("\n+------------ piPrintStats invokation %d -------------+\n", i++);
-    printer("|%-30s|%-10s|\n", "Result", "Occurence");
-    printer("|------------------------------|----------|\n");
-    for (int i=0; i < NUM_PI_STATS_RESULT; i++)
-        printer("|%30s|%10d|\n", piStatsNames[i], piStats[i]);
-    printer("|------------------------------|----------|\n");
-}
-
+__attribute__((unused)) void piPrintStats(int (*printer)(const char * s, ...));
 #endif // #ifdef PI_STATS
 
+#if defined(PI_USE_PRINT_MSGS)
+void piPrintMsgs(int (*printer)(const char* s, ...));
+#endif // #ifdef PI_USE_PRINT_MSGS
+
 #endif // #ifdef (PI_MODE & PI_RX)
-
-
-// --- messages ---
-#include "pi-messages.h"
-
-// --- parser ---
-#if (PI_MODE & PI_RX)
-
-typedef enum {
-    PI_IDLE,
-    PI_STX_FOUND,
-    PI_ID_FOUND
-} pi_parse_state_t;
-
-__attribute__((unused)) static void piParse(uint8_t byte) {
-    static bool piEscHit = false;
-    static pi_parse_state_t piState = PI_IDLE;
-    static uint8_t msgId = PI_MSG_NONE_ID;
-    static uint8_t byteCount = 0;
-    static pi_parse_msg_result_t msgParseResult = PI_PARSE_MSG_NO_ERROR;
-
-#ifdef PI_STATS
-    piStats[PI_PARSE_INVOKE]++;
-#endif
-
-    if (byte == PI_STX) {
-#ifdef PI_STATS
-        piStats[PI_STX_COUNT]++;
-        if (msgParseResult == PI_PARSE_MSG_SUCCESS)
-            piStats[PI_SUCCESS]++;
-#endif
-        piEscHit = false;
-        piState = PI_STX_FOUND;
-        return;
-    }
-
-    if (piState == PI_IDLE)
-        return;
-
-    if (piEscHit) {
-        piEscHit = false;
-        switch(byte) {
-            case PI_STX_ESC:
-                byte = PI_STX;
-                break;
-            case PI_ESC_ESC:
-                byte = PI_ESC;
-                break;
-            default:
-                // failure, next byte MUST have been PI_STX_ESC or PI_ESC_ESC
-#ifdef PI_DEBUG
-                printf("Escaping error: next byte was neither PI_STX_ESC nor PI_ESC_ESC, but rather %02hhX\n", byte);
-#endif
-#ifdef PI_STATS
-                piStats[PI_ESC_ERROR]++;
-#endif
-                piState = PI_IDLE;
-                return;
-        }
-    } else {
-        if (byte == PI_ESC) {
-            piEscHit = true;
-            return;
-        }
-    }
-
-
-    switch(piState) {
-        case PI_IDLE: // can never happen, so fall through to satisfy GCC -Wall
-            break;
-        case PI_STX_FOUND:
-            // parse id
-            msgId = byte;
-            piState = PI_ID_FOUND;
-            byteCount = 0;
-            break;
-        case PI_ID_FOUND:
-            // payload time
-            msgParseResult = piParseIntoMsg(msgId, byte, byteCount++);
-            /* No success handling here, because we require an STX
-               next, otherwise it's not actually success, but EXCEED_MSG_LEN
-               */
-            if (msgParseResult > PI_PARSE_MSG_SUCCESS) {
-#ifdef PI_DEBUG
-                printf("\n msgParseResult > PI_PARSE_MSG_SUCCESS at id 0x%02hhX, byte 0x%02hhX: %d\n", msgId, byte, msgParseResult);
-                msgId = PI_MSG_NONE_ID;
-                piState = PI_IDLE;
-#endif
-#ifdef PI_STATS
-                piStats[msgParseResult]++;
-#endif
-            }
-            break;
-    }
-}
-
-#endif// #if (PI_MODE & PI_RX)
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif // PI_PROTOCOL_H
-    

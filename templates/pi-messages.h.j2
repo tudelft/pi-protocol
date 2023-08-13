@@ -11,6 +11,12 @@ extern "C" {
 #ifdef PI_USE_PRINT_MSGS
 #include <stdarg.h>
 #endif
+#include "pi-protocol.h"
+
+// message payload parsing function
+#if (PI_MODE & PI_RX)
+pi_parse_msg_result_t piParseIntoMsg(const uint8_t msgId, const uint8_t byte, const uint8_t byteCount);
+#endif // #ifdef (PI_MODE & PI_RX)
 
 //--------------------------
 // ------ MESSAGES ---------
@@ -22,56 +28,42 @@ extern "C" {
 {% set piMsg = "piMsg"+msg.nameCamelCase %}
 {% set piMsgA = piMsg+"A" %}
 {% set piMsgB = piMsg+"B" %}
+{% set piMsgTx = piMsg+"Tx" %}
+{% set piMsgRx = piMsg+"Rx" %}
 // ------ {{msg.nameSNAKE_CAPS}} ------
-#define {{piMsgDefine}}_MODE PI_MSG_{{config.include_messages[msg.nameSNAKE_CAPS].mode}}
+#define {{piMsgDefine}}_MODE PI_{{config.include_messages[msg.nameSNAKE_CAPS].mode}}
 
 #define {{piMsgDefine}}_ID {{config.include_messages[msg.nameSNAKE_CAPS].id}}
 #define {{piMsgDefine}}_PAYLOAD_LEN {{msg.payloadLen}}
 
-// payload definition
+// msg definition
 typedef struct __{{piMsgTypedef}}
 {
+    uint8_t id;
+    uint8_t len;
+    // start of payload
 {% for field, dtype in msg.fields.items() %}
     {{dtype}} {{field}};
 {% endfor %}
 } __attribute__((packed)) {{piMsgTypedef}};
 
-//packing helper
-#if (PI_MODE & PI_TX) && ({{piMsgDefine}}_MODE & PI_MSG_TX)
-__attribute__((unused)) static inline int {{piMsg}}Pack(
-    uint8_t * buf,
-{% for field, dtype in msg.fields.items() %}
-    {{dtype}} {{field}}
-    {%- if not loop.last %},
-    {% endif %}
-{% endfor %}
-)
-{
-    buf[0] = {{piMsgDefine}}_ID;
+// todo: we can save on memory, if we use a union as the tx-buffer and not
+// separate structs, if they are only used one-at-a-time
+#if (PI_MODE & PI_TX) && ({{piMsgDefine}}_MODE & PI_TX)
+extern {{piMsgTypedef}} {{piMsgTx}};
+#endif
 
-    {{piMsgTypedef}} payload;
-{% for field, dtype in msg.fields.items() %}
-    payload.{{field}} = {{field}};
-{% endfor %}
-
-    PI_PAYLOAD_TO_BUFFER(buf, payload, {{piMsgDefine}}_PAYLOAD_LEN);
-
-    return PI_MSG_ID_LEN + {{piMsgDefine}}_PAYLOAD_LEN;
-}
-#endif // #if (PI_MODE & PI_TX) && ({{piMsgDefine}}_MODE & PI_MSG_TX)
-
-#if (PI_MODE & PI_RX) && ({{piMsgDefine}}_MODE & PI_MSG_RX)
-// allocations for the A-B parser
-static {{piMsgTypedef}} {{piMsgA}};
-static {{piMsgTypedef}} {{piMsgB}};
-static {{piMsgTypedef}}* {{piMsg}} = NULL;
-static pi_msg_rx_state_t {{piMsg}}RxState = PI_MSG_RX_STATE_NONE;
+#if (PI_MODE & PI_RX) && ({{piMsgDefine}}_MODE & PI_RX)
+extern {{piMsgTypedef}} {{piMsgA}};
+extern {{piMsgTypedef}} {{piMsgB}};
+extern {{piMsgTypedef}}* {{piMsgRx}};
+extern pi_msg_rx_state_t {{piMsgRx}}State;
 
 //print function
-#if PI_USE_PRINT_MSGS
-
-__attribute__((unused)) static void piPrintMsg{{msg.nameCamelCase}}(int (* printer)(const char* fmt, ...)) {
-    if ({{piMsg}}) {
+#ifdef PI_USE_PRINT_MSGS
+__attribute__((unused)) static inline void piPrintMsg{{msg.nameCamelCase}}(int (* printer)(const char* fmt, ...)) {
+    printer("%s\n", "{{msg.nameCamelCase}}");
+    if ({{piMsgRx}}) {
 {% for field, dtype in msg.fields.items() %}
 {% if dtype.startswith('int') %}
     {% set format_spec = '%d' %}
@@ -89,79 +81,20 @@ __attribute__((unused)) static void piPrintMsg{{msg.nameCamelCase}}(int (* print
     // jinja2 has no exception handling.. therefore
     {{ 0/0 }}
 {% endif %}
-        printer("    {{msg.nameSNAKE_CAPS}}.%-{{msg.maxFieldStringLen}}s: {{format_spec}}\n", "{{field}}", {{promoter}}{{piMsg}}->{{field}});
+        printer("    {{msg.nameSNAKE_CAPS}}.%-{{msg.maxFieldStringLen}}s: {{format_spec}}\n", "{{field}}", {{promoter}}{{piMsgRx}}->{{field}});
 {% endfor %}
     } else {
-        printer("    {{piMsg}} is NULL. Message likely not received yet.\n");
+        printer("    {{piMsgRx}} is NULL. Message likely not received yet.\n");
     }
+    printer("-----------\n");
 }
+
 #endif // #ifdef PI_USE_PRINT_MSGS
 
 #endif // #if (PI_MODE & PI_RX) && ({{piMsgDefine}}_MODE & PI_MSG_RX)
 
+
 {% endfor %} {# for msg in msgs #}
-
-
-#if (PI_MODE & PI_RX)
-
-static pi_parse_msg_result_t piParseIntoMsg(const uint8_t msgId, const uint8_t byte, const uint8_t byteCount) {
-    static void * piMsgRxBuffer = NULL;
-    pi_parse_msg_result_t res = PI_PARSE_MSG_NO_ERROR;
-
-    if (msgId >= PI_MSG_MAX_ID)
-        return PI_PARSE_MSG_INVALID_ID;
-
-    if (byteCount >= (PI_MSG_MAX_PAYLOAD_LEN-1))
-        return PI_PARSE_MSG_EXCEEDS_MAX_PAYLOAD_LEN;
-
-    switch(msgId) {
-{% for msg in msgs %}
-{% set piMsgDefine = "PI_MSG_"+msg.nameSNAKE_CAPS %}
-{% set piMsgTypedef = "pi_"+msg.nameSNAKE_CAPS+"_t" %}
-{% set piMsg = "piMsg"+msg.nameCamelCase %}
-{% set piMsgA = piMsg+"A" %}
-{% set piMsgB = piMsg+"B" %}
-#if ({{piMsgDefine}}_MODE & PI_MSG_RX)
-        case {{piMsgDefine}}_ID:
-            if (byteCount == 0)
-                piMsgRxBuffer = ({{piMsg}}RxState > PI_MSG_RX_STATE_A) ? &{{piMsgA}} : &{{piMsgB}};
-            else if (byteCount >= {{piMsgDefine}}_PAYLOAD_LEN)
-                return PI_PARSE_MSG_EXCEEDS_MSG_PAYLOAD_LEN;
-            else if (byteCount == ({{piMsgDefine}}_PAYLOAD_LEN - 1)) {
-                {{piMsg}}RxState = ({{piMsg}}RxState == PI_MSG_RX_STATE_A) ? PI_MSG_RX_STATE_B : PI_MSG_RX_STATE_A;
-                {{piMsg}} = ({{piMsg}}RxState == PI_MSG_RX_STATE_A) ? &{{piMsgA}} : &{{piMsgB}};
-                res = PI_PARSE_MSG_SUCCESS;
-            }
-            break;
-#endif // if ({{piMsgDefine}}_ID & PI_MSG_RX)
-{% endfor %}
-        default:
-            return PI_PARSE_MSG_NO_SUCH_MSG;
-    }
-
-    if (piMsgRxBuffer)
-        *((uint8_t *)piMsgRxBuffer + byteCount) = byte;
-    else
-        return PI_PARSE_MSG_NULL_BUFFER;
-
-    return res;
-}
-
-#ifdef PI_USE_PRINT_MSGS
-static inline void piPrintMsgs(int (*printer)(const char* s, ...)) {
-    static int i = 0;
-    printer("\n+------------ piPrintMsgs invokation %d -------------+\n", i++);
-{% for msg in msgs %}
-#if (PI_MSG_{{msg.nameSNAKE_CAPS}}_MODE & PI_MSG_RX)
-    printer("%s\n", "{{msg.nameCamelCase}}");
-    piPrintMsg{{msg.nameCamelCase}}(printer);
-    printer("-----------\n");
-#endif
-{% endfor %}
-}
-#endif // #ifdef PI_USE_PRINT_MSGS
-
-#endif // #if (PI_MODE & PI_RX)
 
 #ifdef __cplusplus
 }

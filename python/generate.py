@@ -16,6 +16,7 @@ from argparse import ArgumentParser, ArgumentError
 BASE_DIR = os.path.join(os.path.dirname(__file__), "..")
 MSGS_DIR = os.path.join(BASE_DIR, "msgs")
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
+# PI_MSG_MAX_ID = 0xFE
 
 # beun: parse ID and PAYLOAD limits from protocol.h.j2
 for line in open(os.path.join(TEMPLATES_DIR, "pi-protocol.h.j2")).readlines():
@@ -26,7 +27,7 @@ for line in open(os.path.join(TEMPLATES_DIR, "pi-protocol.h.j2")).readlines():
     if (parts[0] == "#define") and (parts[1] == "PI_MSG_MAX_ID"):
         # should automatically recognize base16 due to 0x
         PI_MSG_MAX_ID = int(parts[2], 0)
-    elif (parts[0] =="#define" and (parts[1] == "PI_MSG_MAX_PAYLOAD_LEN")):
+    if (parts[0] =="#define" and (parts[1] == "PI_MSG_MAX_PAYLOAD_LEN")):
         PI_MSG_MAX_PAYLOAD_LEN = int(parts[2], 0)
 
 DATATYPE_LENGTHS = {
@@ -48,8 +49,9 @@ if __name__ == "__main__":
     # parse arguemnts 
     parser = ArgumentParser()
     parser.add_argument("config", help="Must be a y(a)ml file in the same dir as this script.")
-    parser.add_argument("--protocol-only", required=False, action="store_true", default=False)
-    parser.add_argument("--messages-only", required=False, action="store_true", default=False)
+    parser.add_argument("--protocol-h-only", required=False, action="store_true", default=False)
+    parser.add_argument("--messages-h-only", required=False, action="store_true", default=False)
+    parser.add_argument("--messages-c-only", required=False, action="store_true", default=False)
     parser.add_argument("--output-dir", required=False, help="Store generated headers here and not next to this script.")
 
     args = parser.parse_args()
@@ -57,8 +59,8 @@ if __name__ == "__main__":
 
     outputPath = args.output_dir if args.output_dir is not None else BASE_DIR
 
-    if args.protocol_only and args.messages_only:
-        raise ArgumentError("Use none or one of --protocol-only or --messages-only, but not both")
+    if (args.protocol_h_only+args.messages_h_only+args.messages_c_only) > 1:
+        raise ArgumentError("Use none or one of --protocol-h-only or --messages-h-only or --messages-c-only, but not more")
 
     # for checking duplicate ids
     id_list = [] 
@@ -85,6 +87,8 @@ if __name__ == "__main__":
         id_list.append(msg['id'])
         if (msg['id'] < 0x00) or (msg['id'] > PI_MSG_MAX_ID):
             raise ValueError(f"Your {configFile} contains messages with ids outside the range 0x00 and PI_MSG_MAX_ID ({PI_MSG_MAX_ID:#x})!")
+
+    #config['max_id'] = max(id_list)
 
     # load definition of all required messages and calculate payload length
     msgs = []
@@ -134,17 +138,24 @@ if __name__ == "__main__":
     # Generate headers!
     # protocol: fill in global mode and version number
     # messages: generate all message data-types, packing and parsing logic
-    protocol_template = env.get_template('pi-protocol.h.j2')
-    messages_template = env.get_template('pi-messages.h.j2')
+    protocol_h_template = env.get_template('pi-protocol.h.j2')
+    messages_h_template = env.get_template('pi-messages.h.j2')
+    messages_c_template = env.get_template('pi-messages.c.j2')
 
-    if not args.messages_only:
+    if not args.messages_h_only and not args.messages_c_only:
         filename = os.path.join(outputPath, "pi-protocol.h")
         with open(filename, 'w') as protocol_header:
             print("Writing out protocol header...")
-            protocol_header.write(protocol_template.render(data))
+            protocol_header.write(protocol_h_template.render(data))
 
-    if not args.protocol_only:
+    if not args.protocol_h_only and not args.messages_c_only:
         filename = os.path.join(outputPath, "pi-messages.h")
         with open(filename, 'w') as messages_header:
             print("Writing out messages header...")
-            messages_header.write(messages_template.render(data))
+            messages_header.write(messages_h_template.render(data))
+
+    if not args.messages_h_only and not args.protocol_h_only:
+        filename = os.path.join(outputPath, "pi-messages.c")
+        with open(filename, 'w') as messages_source:
+            print("Writing out messages source...")
+            messages_source.write(messages_c_template.render(data))
