@@ -51,12 +51,13 @@ void piSendMsg(void * msg_raw, void (*serialWriter)(uint8_t byte)) {
 
 // --- parser ---
 #if (PI_MODE & PI_RX)
-__attribute__((unused)) void piParse(uint8_t byte) {
+__attribute__((unused)) uint8_t piParse(uint8_t byte) {
     static bool piEscHit = false;
     static pi_parse_state_t piState = PI_IDLE;
     static uint8_t msgId = PI_MSG_NONE_ID;
     static uint8_t byteCount = 0;
     static pi_parse_msg_result_t msgParseResult = PI_PARSE_MSG_NO_ERROR;
+    uint8_t res = 0;
 
 #ifdef PI_STATS
     piStats[PI_PARSE_INVOKE]++;
@@ -70,11 +71,11 @@ __attribute__((unused)) void piParse(uint8_t byte) {
 #endif
         piEscHit = false;
         piState = PI_STX_FOUND;
-        return;
+        return res;
     }
 
     if (piState == PI_IDLE)
-        return;
+        return res;
 
     if (piEscHit) {
         piEscHit = false;
@@ -94,12 +95,12 @@ __attribute__((unused)) void piParse(uint8_t byte) {
                 piStats[PI_ESC_ERROR]++;
 #endif
                 piState = PI_IDLE;
-                return;
+                return res;
         }
     } else {
         if (byte == PI_ESC) {
             piEscHit = true;
-            return;
+            return res;
         }
     }
 
@@ -119,6 +120,10 @@ __attribute__((unused)) void piParse(uint8_t byte) {
             /* No success handling here, because we require an STX
                next, otherwise it's not actually success, but EXCEED_MSG_LEN
                */
+            if (msgParseResult == PI_PARSE_MSG_SUCCESS) 
+            {
+                res = 1;
+            } 
             if (msgParseResult > PI_PARSE_MSG_SUCCESS) {
 #ifdef PI_DEBUG
                 printf("\n msgParseResult > PI_PARSE_MSG_SUCCESS at id 0x%02hhX, byte 0x%02hhX: %d\n", msgId, byte, msgParseResult);
@@ -131,6 +136,7 @@ __attribute__((unused)) void piParse(uint8_t byte) {
             }
             break;
     }
+    return res;
 }
 
 #ifdef PI_STATS

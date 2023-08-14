@@ -81,7 +81,7 @@ __attribute__((unused)) static inline void piPrintMsg{{msg.nameCamelCase}}(int (
     // jinja2 has no exception handling.. therefore
     {{ 0/0 }}
 {% endif %}
-        printer("    {{msg.nameSNAKE_CAPS}}.%-{{msg.maxFieldStringLen}}s: {{format_spec}}\n", "{{field}}", {{promoter}}{{piMsgRx}}->{{field}});
+        printer("    {{msg.nameSNAKE_CAPS}}.%s%{{ msg.maxFieldStringLen + 1 - field|length }}s {{format_spec}}\n", "{{field}}", ":", {{promoter}}{{piMsgRx}}->{{field}});
 {% endfor %}
     } else {
         printer("    {{piMsgRx}} is NULL. Message likely not received yet.\n");
