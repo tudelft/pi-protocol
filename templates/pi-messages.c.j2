@@ -41,8 +41,8 @@ pi_parse_msg_result_t piParseIntoMsg(const uint8_t msgId, const uint8_t byte, co
     if (msgId > PI_MSG_MAX_ID)
         return PI_PARSE_MSG_INVALID_ID;
 
-    if (byteCount > PI_MSG_MAX_PAYLOAD_LEN)
-        return PI_PARSE_MSG_EXCEEDS_MAX_PAYLOAD_LEN;
+    //if (byteCount > PI_MSG_MAX_PAYLOAD_LEN)
+    //    return PI_PARSE_MSG_EXCEEDS_MAX_PAYLOAD_LEN;
 
     if ((_msgId != msgId) || (byteCount == 0)) {
         // reset and re-assign buffers
