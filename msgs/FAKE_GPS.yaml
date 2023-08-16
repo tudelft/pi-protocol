@@ -9,6 +9,6 @@ fields:
   lon: int32_t # longitude * 1e+7
   altCm: int32_t # in cm
   hdop: uint16_t # DOP * 100
-  groundSpeed: uint16_t # speed in 0.1m/s
+  groundSpeed: uint16_t # speed in 0.01m/s
   groundCourse: uint16_t # degrees * 10
   numSat: uint8_t

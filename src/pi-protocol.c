@@ -57,7 +57,7 @@ __attribute__((unused)) uint8_t piParse(uint8_t byte) {
     static uint8_t msgId = PI_MSG_NONE_ID;
     static uint8_t byteCount = 0;
     static pi_parse_msg_result_t msgParseResult = PI_PARSE_MSG_NO_ERROR;
-    uint8_t res = 0;
+    uint8_t res = PI_MSG_NONE_ID;
 
 #ifdef PI_STATS
     piStats[PI_PARSE_INVOKE]++;
@@ -122,7 +122,7 @@ __attribute__((unused)) uint8_t piParse(uint8_t byte) {
                */
             if (msgParseResult == PI_PARSE_MSG_SUCCESS) 
             {
-                res = 1;
+                res = msgId;
             } 
             if (msgParseResult > PI_PARSE_MSG_SUCCESS) {
 #ifdef PI_DEBUG
