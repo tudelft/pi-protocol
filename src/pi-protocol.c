@@ -115,9 +115,6 @@ __attribute__((unused)) uint8_t piParse(uint8_t byte) {
         case PI_ID_FOUND:
             // payload time
             msgParseResult = piParseIntoMsg(msgId, byte, byteCount++);
-            /* No success handling here, because we require an STX
-               next, otherwise it's not actually success, but EXCEED_MSG_LEN
-               */
             if (msgParseResult == PI_PARSE_MSG_SUCCESS) 
             {
                 res = msgId;
