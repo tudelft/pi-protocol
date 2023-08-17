@@ -3,3 +3,4 @@ global_mode: RXTX
 include_messages:
   IMU: {id: 1, mode: RXTX}
   FAKE_GPS: {id: 2, mode: RXTX}
+  EXTERNAL_POSE: {id: 3, mode: RXTX}
