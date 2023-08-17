@@ -66,8 +66,6 @@ __attribute__((unused)) uint8_t piParse(uint8_t byte) {
     if (byte == PI_STX) {
 #ifdef PI_STATS
         piStats[PI_STX_COUNT]++;
-        if (msgParseResult == PI_PARSE_MSG_SUCCESS)
-            piStats[PI_SUCCESS]++;
 #endif
         piEscHit = false;
         piState = PI_STX_FOUND;
@@ -123,13 +121,16 @@ __attribute__((unused)) uint8_t piParse(uint8_t byte) {
             if (msgParseResult == PI_PARSE_MSG_SUCCESS) 
             {
                 res = msgId;
+#ifdef PI_STATS
+                piStats[PI_SUCCESS]++;
+#endif
             } 
             if (msgParseResult > PI_PARSE_MSG_SUCCESS) {
 #ifdef PI_DEBUG
                 printf("\n msgParseResult > PI_PARSE_MSG_SUCCESS at id 0x%02hhX, byte 0x%02hhX: %d\n", msgId, byte, msgParseResult);
+#endif
                 msgId = PI_MSG_NONE_ID;
                 piState = PI_IDLE;
-#endif
 #ifdef PI_STATS
                 piStats[msgParseResult]++;
 #endif
