@@ -1,0 +1,14 @@
+# supported datatypes
+# (u)int8_t, (u)int16_t, (u)int32_t, (u)int64_t, float, double (double needs to be verified working)
+
+# see src/main/io/gps.h
+fields:
+  time_ms: uint32_t
+  # LLH lication in NEU axis system 
+  enu_x: float # pos
+  enu_y: float
+  enu_z: float
+  enu_xd: float # vel
+  enu_yd: float
+  enu_zd: float
+  yaw: float # yaw angle in degree
