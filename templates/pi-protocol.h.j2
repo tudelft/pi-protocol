@@ -45,6 +45,7 @@ extern "C" {
 // --- serializer ---
 #if (PI_MODE & PI_TX)
 void piSendMsg(void * msg_raw, void (*serialWriter)(uint8_t byte));
+unsigned int piAccumulateMsg(void * msg_raw, uint8_t * buf);
 #endif
 
 // rx parsing states

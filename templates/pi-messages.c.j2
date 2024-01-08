@@ -28,13 +28,13 @@ pi_msg_rx_state_t {{piMsg}}RxState = PI_MSG_RX_STATE_NONE;
 // ---- parsing function ---- //
 #if (PI_MODE & PI_RX)
 pi_parse_msg_result_t piParseIntoMsg(pi_parse_states_t * p, const uint8_t byte) {
-    p->curMsgId = 0;
-    p->piMsgRxBuffer = NULL;
-    p->piMsgRx_ptr = NULL;
-    p->piMsgA_ptr = NULL;
-    p->piMsgB_ptr = NULL;
-    p->piMsgRxState_ptr = NULL;
-    p->piMsgLen = 0;
+    //p->curMsgId = 0;
+    //p->piMsgRxBuffer = NULL;
+    //p->piMsgRx_ptr = NULL;
+    //p->piMsgA_ptr = NULL;
+    //p->piMsgB_ptr = NULL;
+    //p->piMsgRxState_ptr = NULL;
+    //p->piMsgLen = 0;
 
     pi_parse_msg_result_t res = PI_PARSE_MSG_NO_ERROR;
 
