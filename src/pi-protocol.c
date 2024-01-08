@@ -51,13 +51,14 @@ void piSendMsg(void * msg_raw, void (*serialWriter)(uint8_t byte)) {
 
 // --- parser ---
 #if (PI_MODE & PI_RX)
-__attribute__((unused)) uint8_t piParse(uint8_t byte) {
-    static bool piEscHit = false;
-    static pi_parse_state_t piState = PI_IDLE;
-    static uint8_t msgId = PI_MSG_NONE_ID;
-    static uint8_t byteCount = 0;
-    static pi_parse_msg_result_t msgParseResult = PI_PARSE_MSG_NO_ERROR;
+__attribute__((unused)) uint8_t piParse(pi_parse_states_t * p, uint8_t byte) {
     uint8_t res = PI_MSG_NONE_ID;
+
+    p->piEscHit = false;
+    p->piState = PI_IDLE;
+    p->msgId = PI_MSG_NONE_ID;
+    p->byteCount = 0;
+    p->msgParseResult = PI_PARSE_MSG_NO_ERROR;
 
 #ifdef PI_STATS
     piStats[PI_PARSE_INVOKE]++;
@@ -67,16 +68,16 @@ __attribute__((unused)) uint8_t piParse(uint8_t byte) {
 #ifdef PI_STATS
         piStats[PI_STX_COUNT]++;
 #endif
-        piEscHit = false;
-        piState = PI_STX_FOUND;
+        p->piEscHit = false;
+        p->piState = PI_STX_FOUND;
         return res;
     }
 
-    if (piState == PI_IDLE)
+    if (p->piState == PI_IDLE)
         return res;
 
-    if (piEscHit) {
-        piEscHit = false;
+    if (p->piEscHit) {
+        p->piEscHit = false;
         switch(byte) {
             case PI_STX_ESC:
                 byte = PI_STX;
@@ -92,44 +93,45 @@ __attribute__((unused)) uint8_t piParse(uint8_t byte) {
 #ifdef PI_STATS
                 piStats[PI_ESC_ERROR]++;
 #endif
-                piState = PI_IDLE;
+                p->piState = PI_IDLE;
                 return res;
         }
     } else {
         if (byte == PI_ESC) {
-            piEscHit = true;
+            p->piEscHit = true;
             return res;
         }
     }
 
 
-    switch(piState) {
+    switch(p->piState) {
         case PI_IDLE: // can never happen, so fall through to satisfy GCC -Wall
             break;
         case PI_STX_FOUND:
             // parse id
-            msgId = byte;
-            piState = PI_ID_FOUND;
-            byteCount = 0;
+            p->msgId = byte;
+            p->piState = PI_ID_FOUND;
+            p->byteCount = 0;
             break;
         case PI_ID_FOUND:
             // payload time
-            msgParseResult = piParseIntoMsg(msgId, byte, byteCount++);
-            if (msgParseResult == PI_PARSE_MSG_SUCCESS) 
+            p->msgParseResult = piParseIntoMsg(p, byte);
+            (p->byteCount)++;
+            if (p->msgParseResult == PI_PARSE_MSG_SUCCESS) 
             {
-                res = msgId;
+                res = p->msgId;
 #ifdef PI_STATS
                 piStats[PI_SUCCESS]++;
 #endif
             } 
-            if (msgParseResult > PI_PARSE_MSG_SUCCESS) {
+            if (p->msgParseResult > PI_PARSE_MSG_SUCCESS) {
 #ifdef PI_DEBUG
                 printf("\n msgParseResult > PI_PARSE_MSG_SUCCESS at id 0x%02hhX, byte 0x%02hhX: %d\n", msgId, byte, msgParseResult);
 #endif
-                msgId = PI_MSG_NONE_ID;
-                piState = PI_IDLE;
+                p->msgId = PI_MSG_NONE_ID;
+                p->piState = PI_IDLE;
 #ifdef PI_STATS
-                piStats[msgParseResult]++;
+                piStats[p->msgParseResult]++;
 #endif
             }
             break;
