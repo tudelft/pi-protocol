@@ -15,7 +15,7 @@ extern "C" {
 
 // message payload parsing function
 #if (PI_MODE & PI_RX)
-pi_parse_msg_result_t piParseIntoMsg(const uint8_t msgId, const uint8_t byte, const uint8_t byteCount);
+pi_parse_msg_result_t piParseIntoMsg(pi_parse_states_t * p, const uint8_t byte);
 #endif // #ifdef (PI_MODE & PI_RX)
 
 //--------------------------

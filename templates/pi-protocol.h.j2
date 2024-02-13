@@ -45,6 +45,7 @@ extern "C" {
 // --- serializer ---
 #if (PI_MODE & PI_TX)
 void piSendMsg(void * msg_raw, void (*serialWriter)(uint8_t byte));
+unsigned int piAccumulateMsg(void * msg_raw, uint8_t * buf);
 #endif
 
 // rx parsing states
@@ -71,7 +72,22 @@ typedef enum {
     PI_PARSE_MSG_NO_SUCH_MSG,
 } pi_parse_msg_result_t;
 
-uint8_t piParse(uint8_t byte);
+typedef struct pi_parse_states_s {
+    uint8_t msgId;
+    uint8_t curMsgId;
+    uint8_t piMsgLen;
+    uint8_t byteCount;
+    bool piEscHit;
+    pi_parse_state_t piState;
+    pi_parse_msg_result_t msgParseResult;
+    void * piMsgRxBuffer;
+    void ** piMsgRx_ptr;
+    void * piMsgA_ptr;
+    void * piMsgB_ptr;
+    pi_msg_rx_state_t * piMsgRxState_ptr;
+} pi_parse_states_t;
+
+uint8_t piParse(pi_parse_states_t * p, uint8_t byte);
 
 #ifdef PI_STATS
 typedef enum {

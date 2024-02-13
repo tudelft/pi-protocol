@@ -27,39 +27,39 @@ pi_msg_rx_state_t {{piMsg}}RxState = PI_MSG_RX_STATE_NONE;
 
 // ---- parsing function ---- //
 #if (PI_MODE & PI_RX)
-pi_parse_msg_result_t piParseIntoMsg(const uint8_t msgId, const uint8_t byte, const uint8_t byteCount) {
-    static uint8_t _msgId = 0;
-    static void * piMsgRxBuffer = NULL;
-    static void ** piMsgRx_ptr = NULL;
-    static void * piMsgA_ptr = NULL;
-    static void * piMsgB_ptr = NULL;
-    static pi_msg_rx_state_t * piMsgRxState_ptr = NULL;
-    static uint8_t piMsgLen = 0;
+pi_parse_msg_result_t piParseIntoMsg(pi_parse_states_t * p, const uint8_t byte) {
+    //p->curMsgId = 0;
+    //p->piMsgRxBuffer = NULL;
+    //p->piMsgRx_ptr = NULL;
+    //p->piMsgA_ptr = NULL;
+    //p->piMsgB_ptr = NULL;
+    //p->piMsgRxState_ptr = NULL;
+    //p->piMsgLen = 0;
 
     pi_parse_msg_result_t res = PI_PARSE_MSG_NO_ERROR;
 
-    if (msgId > PI_MSG_MAX_ID)
+    if (p->msgId > PI_MSG_MAX_ID)
         return PI_PARSE_MSG_INVALID_ID;
 
     //if (byteCount > PI_MSG_MAX_PAYLOAD_LEN)
     //    return PI_PARSE_MSG_EXCEEDS_MAX_PAYLOAD_LEN;
 
-    if ((_msgId != msgId) || (byteCount == 0)) {
+    if ((p->curMsgId != p->msgId) || (p->byteCount == 0)) {
         // reset and re-assign buffers
-        _msgId = msgId;
+        p->curMsgId = p->msgId;
 
-        switch(msgId) {
+        switch(p->msgId) {
 {% for msg in msgs %}
 {% set piMsg = "piMsg"+msg.nameCamelCase %}
 {% set piMsgDefine = "PI_MSG_"+msg.nameSNAKE_CAPS %}
 {% set piMsgTypedef = "pi_"+msg.nameSNAKE_CAPS+"_t" %}
 #if ({{piMsgDefine}}_MODE & PI_RX)
             case {{piMsgDefine}}_ID:
-                piMsgRx_ptr = (void *)&{{piMsg}}Rx;
-                piMsgA_ptr = &{{piMsg}}A;
-                piMsgB_ptr = &{{piMsg}}B;
-                piMsgRxState_ptr = &{{piMsg}}RxState;
-                piMsgLen = {{piMsgDefine}}_PAYLOAD_LEN;
+                p->piMsgRx_ptr = (void *)&{{piMsg}}Rx;
+                p->piMsgA_ptr = &{{piMsg}}A;
+                p->piMsgB_ptr = &{{piMsg}}B;
+                p->piMsgRxState_ptr = &{{piMsg}}RxState;
+                p->piMsgLen = {{piMsgDefine}}_PAYLOAD_LEN;
                 break;
 #endif
 {% endfor %}
@@ -68,18 +68,18 @@ pi_parse_msg_result_t piParseIntoMsg(const uint8_t msgId, const uint8_t byte, co
         }
     }
 
-    if (byteCount == 0)
-        piMsgRxBuffer = (*piMsgRxState_ptr > PI_MSG_RX_STATE_A) ? piMsgA_ptr : piMsgB_ptr;
-    else if (byteCount >= piMsgLen)
+    if (p->byteCount == 0)
+        p->piMsgRxBuffer = (*(p->piMsgRxState_ptr) > PI_MSG_RX_STATE_A) ? p->piMsgA_ptr : p->piMsgB_ptr;
+    else if (p->byteCount >= p->piMsgLen)
         return PI_PARSE_MSG_EXCEEDS_MSG_PAYLOAD_LEN;
-    else if (byteCount == (piMsgLen - 1)) {
-        *piMsgRxState_ptr = (*piMsgRxState_ptr == PI_MSG_RX_STATE_A) ? PI_MSG_RX_STATE_B : PI_MSG_RX_STATE_A;
-        *piMsgRx_ptr = (*piMsgRxState_ptr == PI_MSG_RX_STATE_A) ? piMsgA_ptr : piMsgB_ptr;
+    else if (p->byteCount == (p->piMsgLen - 1)) {
+        *(p->piMsgRxState_ptr) = (*(p->piMsgRxState_ptr) == PI_MSG_RX_STATE_A) ? PI_MSG_RX_STATE_B : PI_MSG_RX_STATE_A;
+        *(p->piMsgRx_ptr) = (*(p->piMsgRxState_ptr) == PI_MSG_RX_STATE_A) ? p->piMsgA_ptr : p->piMsgB_ptr;
         res = PI_PARSE_MSG_SUCCESS;
     }
 
-    if (piMsgRxBuffer)
-        *((uint8_t *)piMsgRxBuffer + byteCount + PI_MSG_PAYLOAD_LEN_BYTES + PI_MSG_ID_BYTES) = byte;
+    if (p->piMsgRxBuffer)
+        *((uint8_t *)p->piMsgRxBuffer + p->byteCount + PI_MSG_PAYLOAD_LEN_BYTES + PI_MSG_ID_BYTES) = byte;
     else
         return PI_PARSE_MSG_NULL_BUFFER;
 
