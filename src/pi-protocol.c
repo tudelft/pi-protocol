@@ -164,7 +164,7 @@ __attribute__((unused)) uint8_t piParse(pi_parse_states_t * p, uint8_t byte) {
             } 
             if (p->msgParseResult > PI_PARSE_MSG_SUCCESS) {
 #ifdef PI_DEBUG
-                printf("\n msgParseResult > PI_PARSE_MSG_SUCCESS at id 0x%02hhX, byte 0x%02hhX: %d\n", msgId, byte, msgParseResult);
+                printf("\n msgParseResult > PI_PARSE_MSG_SUCCESS at id 0x%02hhX, byte 0x%02hhX: %d\n", p->msgId, byte, p->msgParseResult);
 #endif
                 p->msgId = PI_MSG_NONE_ID;
                 p->piState = PI_IDLE;
