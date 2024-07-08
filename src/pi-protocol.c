@@ -13,38 +13,11 @@ extern "C" {
 // --- sender --- //
 #if (PI_MODE & PI_TX)
 void piSendMsg(void * msg_raw, void (*serialWriter)(uint8_t byte)) {
-    // cast to uint8_t pointer
-    uint8_t * msg = (uint8_t *) msg_raw;
+    uint8_t buf[2*PI_MAX_PACKET_LEN]; // wasting some stack
+    unsigned int num_bytes = piAccumulateMsg( msg_raw, buf );
 
-    // start byte first. Next field (id) will be handled with the usual escape
-    serialWriter(PI_STX);
-
-    // this is not that nice, because it assume that id and len are 1 byte
-    bool id_sent = false;
-    uint8_t id = *(msg++);
-    uint8_t len = *(msg++);
-
-    while (len-- > 0) {
-        uint8_t byte;
-        if (!id_sent) {
-            byte = id;
-            len++;
-            id_sent = true;
-        } else {
-            byte = *(msg++);
-        }
-        switch(byte) {
-            case PI_STX:
-                serialWriter(PI_ESC);
-                serialWriter(PI_STX_ESC);
-                break;
-            case PI_ESC:
-                serialWriter(PI_ESC);
-                serialWriter(PI_ESC_ESC);
-                break;
-            default:
-                serialWriter(byte);
-        }
+    for (unsigned int i = 0; i < num_bytes; i++) {
+        serialWriter(buf[i]);
     }
 }
 unsigned int piAccumulateMsg(void * msg_raw, uint8_t * buf) {
@@ -59,16 +32,22 @@ unsigned int piAccumulateMsg(void * msg_raw, uint8_t * buf) {
     // this is not that nice, because it assume that id and len are 1 byte
     bool id_sent = false;
     uint8_t id = *(msg++);
-    uint8_t len = *(msg++);
+    uint8_t len = *(msg++) + 1 + 1; // one extra for id, one for checksum
+    uint8_t checksum = id;
 
     while (len-- > 0) {
         uint8_t byte;
         if (!id_sent) {
+            // send id
             byte = id;
-            len++;
             id_sent = true;
-        } else {
+        } else if (len > 0) {
+            // send message payload
             byte = *(msg++);
+            checksum ^= byte;
+        } else {
+            // send checksum byte
+            byte = checksum;
         }
         switch(byte) {
             case PI_STX:
@@ -148,6 +127,7 @@ __attribute__((unused)) uint8_t piParse(pi_parse_states_t * p, uint8_t byte) {
         case PI_STX_FOUND:
             // parse id
             p->msgId = byte;
+            p->checksum = byte;
             p->piState = PI_ID_FOUND;
             p->byteCount = 0;
             break;
@@ -178,7 +158,7 @@ __attribute__((unused)) uint8_t piParse(pi_parse_states_t * p, uint8_t byte) {
 }
 
 #ifdef PI_STATS
-unsigned int piStats[NUM_PI_STATS_RESULT] = {0,0,0,0, 0,0,0,0, 0};
+unsigned int piStats[NUM_PI_STATS_RESULT] = { 0,0,0,0, 0,0,0, 0,0,0 };
 
 __attribute__((unused)) void piPrintStats(int (*printer)(const char * s, ...)) {
     static int i = 0;

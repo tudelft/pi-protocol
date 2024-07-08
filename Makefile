@@ -20,7 +20,7 @@ src/pi-messages.c : templates/pi-messages.c.j2 python/generate.py config.yaml ms
 # for test-cases
 CC = gcc
 
-C_FLAGS = -Wall -Wpedantic -Werror -g -O0
+C_FLAGS = -Wall -Wextra -Werror -Wpedantic -Wunsafe-loop-optimizations -Wold-style-definition -g -O0
 
 DEFINES = -DPI_USE_PRINT_MSGS -DPI_STATS -DPI_DEBUG
 
