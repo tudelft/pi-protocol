@@ -16,7 +16,7 @@ void piSendMsg(void * msg_raw, void (*serialWriter)(uint8_t byte)) {
     uint8_t buf[2*PI_MAX_PACKET_LEN]; // wasting some stack
     unsigned int num_bytes = piAccumulateMsg( msg_raw, buf );
 
-    for (int i = 0; i < num_bytes; i++) {
+    for (unsigned int i = 0; i < num_bytes; i++) {
         serialWriter(buf[i]);
     }
 }
@@ -33,14 +33,13 @@ unsigned int piAccumulateMsg(void * msg_raw, uint8_t * buf) {
     bool id_sent = false;
     uint8_t id = *(msg++);
     uint8_t len = *(msg++) + 1 + 1; // one extra for id, one for checksum
-    uint8_t checksum; 
+    uint8_t checksum = id;
 
     while (len-- > 0) {
         uint8_t byte;
         if (!id_sent) {
             // send id
             byte = id;
-            checksum = id;
             id_sent = true;
         } else if (len > 0) {
             // send message payload

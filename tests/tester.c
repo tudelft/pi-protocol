@@ -18,7 +18,10 @@ void dummyWriter(uint8_t byte)
 }
 
 #define N 0x08
+#define UNUSED(x) (void)(x)
 int main(int argc, char** argv) {
+    UNUSED(argc);
+    UNUSED(argv);
 
     int i = 0;
     while (i++ < N) {
