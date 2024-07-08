@@ -68,20 +68,28 @@ pi_parse_msg_result_t piParseIntoMsg(pi_parse_states_t * p, const uint8_t byte) 
         }
     }
 
-    if (p->byteCount == 0)
+    if (p->byteCount == 0) {
         p->piMsgRxBuffer = (*(p->piMsgRxState_ptr) > PI_MSG_RX_STATE_A) ? p->piMsgA_ptr : p->piMsgB_ptr;
-    else if (p->byteCount >= p->piMsgLen)
+    } else if (p->byteCount > p->piMsgLen) {
         return PI_PARSE_MSG_EXCEEDS_MSG_PAYLOAD_LEN;
-    else if (p->byteCount == (p->piMsgLen - 1)) {
-        *(p->piMsgRxState_ptr) = (*(p->piMsgRxState_ptr) == PI_MSG_RX_STATE_A) ? PI_MSG_RX_STATE_B : PI_MSG_RX_STATE_A;
-        *(p->piMsgRx_ptr) = (*(p->piMsgRxState_ptr) == PI_MSG_RX_STATE_A) ? p->piMsgA_ptr : p->piMsgB_ptr;
-        res = PI_PARSE_MSG_SUCCESS;
+    } else if (p->byteCount == p->piMsgLen) {
+        // check checksum. Either it's invalid, or we have a successful message
+        if (p->checksum == byte) {
+            // success! let's set the rx pointer accordingly
+            *(p->piMsgRxState_ptr) = (*(p->piMsgRxState_ptr) == PI_MSG_RX_STATE_A) ? PI_MSG_RX_STATE_B : PI_MSG_RX_STATE_A;
+            *(p->piMsgRx_ptr) = (*(p->piMsgRxState_ptr) == PI_MSG_RX_STATE_A) ? p->piMsgA_ptr : p->piMsgB_ptr;
+            return PI_PARSE_MSG_SUCCESS;
+        } else {
+            return PI_PARSE_MSG_INVALID_CHECKSUM;
+        }
     }
 
-    if (p->piMsgRxBuffer)
+    if (p->piMsgRxBuffer) {
         *((uint8_t *)p->piMsgRxBuffer + p->byteCount + PI_MSG_PAYLOAD_LEN_BYTES + PI_MSG_ID_BYTES) = byte;
-    else
+        p->checksum ^= byte;
+    } else {
         return PI_PARSE_MSG_NULL_BUFFER;
+    }
 
     return res;
 }
