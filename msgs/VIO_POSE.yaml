@@ -1,0 +1,16 @@
+fields:
+  time_ms: uint32_t
+  # LLH location in NEU axis system
+  enu_x_vio: float # pos
+  enu_y_vio: float
+  enu_z_vio: float
+  enu_xd_vio: float # vel
+  enu_yd_vio: float
+  enu_zd_vio: float
+  body_roll_vio: float # attitude
+  body_pitch_vio: float
+  body_yaw_vio: float
+  # body_qi: float # attitude quaternion
+  # body_qx: float
+  # body_qy: float
+  # body_qz: float
