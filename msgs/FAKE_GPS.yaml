@@ -3,7 +3,7 @@
 
 # see src/main/io/gps.h
 fields:
-  time_ms: uint32_t
+  time_us: uint32_t
   # LLH lication in NEU axis system 
   lat: int32_t # latitude * 1e+7
   lon: int32_t # longitude * 1e+7
