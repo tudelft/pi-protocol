@@ -2,7 +2,7 @@
 # (u)int8_t, (u)int16_t, (u)int32_t, (u)int64_t, float, double (double needs to be verified working)
 
 fields:
-  time_ms: uint32_t
+  time_us: uint32_t
   set_1: int16_t
   set_2: int16_t
   set_3: int16_t

@@ -1,5 +1,5 @@
 fields:
-  time_ms: uint32_t
+  time_us: uint32_t
   # LLH location in NEU axis system
   x: float # pos
   y: float
