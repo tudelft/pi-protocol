@@ -27,7 +27,7 @@ int main(int argc, char** argv) {
     while (i++ < N) {
 #if (PI_MODE & PI_TX) && (PI_MSG_IMU_MODE & PI_TX)
         printf("Run %02d, msg IMU: TX: ", i);
-        piMsgImuTx.time_ms = i;
+        piMsgImuTx.time_us = i;
         piMsgImuTx.roll = i+2.f;
         piMsgImuTx.pitch = 0.;
         piMsgImuTx.yaw = 0.;
@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
 
 #if (PI_MODE & PI_TX) && (PI_MSG_DUMMY_MESSAGE_MODE & PI_TX)
         printf("\nRun %02d, msg DUMMY_MESSAGE: TX: ", i);
-        piMsgDummyMessageTx.time_ms = i;
+        piMsgDummyMessageTx.time_us = i;
         piMsgDummyMessageTx.roll = 0.;
         piMsgDummyMessageTx.roll1 = 0.;
         piSendMsg(&piMsgDummyMessageTx, &dummyWriter);
@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
             printf("- RX: msg_id %02hhX, Rx Buffer: %d, time: %d, R: %f, P: %f, Y: %f, x: %f, y: %f, z: %f.",
                 PI_MSG_IMU_ID,
                 piMsgImuRxState,
-                piMsgImuB.time_ms,
+                piMsgImuB.time_us,
                 piMsgImuB.roll,
                 piMsgImuB.pitch,
                 piMsgImuB.yaw,
