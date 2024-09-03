@@ -28,3 +28,6 @@ fields:
   ned_yd: float
   ned_zd: float
   yaw: float # yaw angle in degree
+  mode_a: float # Injection input mode [impulse, doublet, 211]
+  mode_b: float
+  mode_c: float
