@@ -1,0 +1,11 @@
+
+# 4  +  4 * 3  +  2 * 4  =  24 bytes per message  => 240 / 921600 = 0.26ms wire delay
+fields:
+  time_us: uint32_t
+  x: float # pos in metres. NED
+  y: float
+  z: float
+  qw: int16_t # attitude quaternion  =  this int16_t / 32768
+  qx: int16_t # NED
+  qy: int16_t
+  qz: int16_t

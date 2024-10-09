@@ -1,0 +1,32 @@
+
+# 4 + 2 * 28  =  60 bytes per message => 600 / 921600 = 0.65ms wire delay
+fields:
+  time_us: uint32_t
+  c00: int16_t # covariance parameter  = this int16_t  /  1000
+  c01: int16_t # NED
+  c11: int16_t
+  c02: int16_t
+  c12: int16_t
+  c22: int16_t
+  c03: int16_t
+  c13: int16_t
+  c23: int16_t
+  c33: int16_t
+  c04: int16_t
+  c14: int16_t
+  c24: int16_t
+  c34: int16_t
+  c44: int16_t
+  c05: int16_t
+  c15: int16_t
+  c25: int16_t
+  c35: int16_t
+  c45: int16_t
+  c55: int16_t
+  c06: int16_t
+  c16: int16_t
+  c26: int16_t
+  c36: int16_t
+  c46: int16_t
+  c56: int16_t
+  c66: int16_t
