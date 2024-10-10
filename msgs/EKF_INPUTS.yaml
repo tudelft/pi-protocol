@@ -20,13 +20,13 @@
 # 4  +  2 * 6  +  2 * 4  =  24 bytes per message  => 240 / 921600 = 0.26ms wire delay
 fields:
   time_us: uint32_t
-  p: int16_t  # rate in rad/s  =  ( this int16_t ) * (( 2000 * 3.1415 / 180 ) / ( 32768 ))
-  q: int16_t  # FRD body frame
-  r: int16_t
   x: int16_t  # acc in m/s/s  =  ( this int16_t ) * ( 9.81 / 2048 )
   y: int16_t
   z: int16_t
-  omega1: int16_t  # rotor speed in rad/s, no conversion necessary
-  omega2: int16_t  # betaflight numbering (1: RR, 2: FR, 3: RL, 4: FL)
-  omega3: int16_t
-  omega4: int16_t
+  p: int16_t  # rate in rad/s  =  ( this int16_t ) * (( 2000 * 3.1415 / 180 ) / ( 32768 ))
+  q: int16_t  # FRD body frame
+  r: int16_t
+  omega1: uint16_t  # rotor speed in rad/s, no conversion necessary
+  omega2: uint16_t  # betaflight numbering (1: RR, 2: FR, 3: RL, 4: FL)
+  omega3: uint16_t
+  omega4: uint16_t
