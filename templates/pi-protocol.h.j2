@@ -49,6 +49,14 @@ extern "C" {
 #define PI_MSG_PAYLOAD_LEN_BYTES 1
 #define PI_MAX_PACKET_LEN (PI_MSG_MAX_PAYLOAD_LEN + PI_MSG_ID_BYTES)
 
+// --- crc ---
+// this crc8 is guaranteed to catch all double-bit flips up to payload length of 247bits
+// https://users.ece.cmu.edu/~koopman/crc/c08/0xe7_len.txt
+#define PI_CRC8_POLYNOMIAL 0xE7
+
+// well known slow (without lookup tables) crc8 code taken from betaflight
+uint8_t crc8_calc(uint8_t crc, unsigned char a, uint8_t poly);
+
 // --- global mode ---
 #define PI_NONE 0
 #define PI_TX   1 << 0

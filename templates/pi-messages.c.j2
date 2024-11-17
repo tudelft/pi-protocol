@@ -107,7 +107,7 @@ pi_parse_msg_result_t piParseIntoMsg(pi_parse_states_t * p, const uint8_t byte) 
 
     if (p->piMsgRxBuffer) {
         *((uint8_t *)p->piMsgRxBuffer + p->byteCount + PI_MSG_PAYLOAD_LEN_BYTES + PI_MSG_ID_BYTES) = byte;
-        p->checksum ^= byte;
+        p->checksum = crc8_calc(p->checksum, byte, PI_CRC8_POLYNOMIAL);
     } else {
         return PI_PARSE_MSG_NULL_BUFFER;
     }
