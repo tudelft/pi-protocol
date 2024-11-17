@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
     exceed_msg_len[1] = 0x01;
     exceed_msg_len[2] = 0x03;
     exceed_msg_len[3] = 0x10;
-    exceed_msg_len[PI_MSG_IMU_PAYLOAD_LEN+3] = 0x11; // correct checksum
+    exceed_msg_len[PI_MSG_IMU_PAYLOAD_LEN+3] = 0x9F; // correct checksum https://www.sunshine2k.de/coding/javascript/crc/crc_js.html
     exceed_msg_len[PI_MSG_IMU_PAYLOAD_LEN+4] = 0x00; // erroneous empty byte
     exceed_msg_len[PI_MSG_IMU_PAYLOAD_LEN+5] = 0xFE; // new start byte
 
@@ -125,7 +125,7 @@ int main(int argc, char** argv) {
     invalid_checksum[1] = 0x01;
     invalid_checksum[2] = 0x03;
     invalid_checksum[3] = 0x10;
-    invalid_checksum[PI_MSG_IMU_PAYLOAD_LEN+3] = 0x12; // incorrect checksum
+    invalid_checksum[PI_MSG_IMU_PAYLOAD_LEN+3] = 0x9E; // incorrect checksum
 
     for (int i = 0; i < PI_MSG_IMU_PAYLOAD_LEN+4; i++) {
         piParse(&p, invalid_checksum[i]);
