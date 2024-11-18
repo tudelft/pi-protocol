@@ -33,7 +33,7 @@ extern "C" {
 #include "pi-messages.h"
 
 // well known slow (without lookup tables) crc8 code taken from betaflight
-uint8_t crc8_calc(uint8_t crc, unsigned char a, uint8_t poly)
+uint8_t crc8_calc_pi(uint8_t crc, unsigned char a, uint8_t poly)
 {
     crc ^= a;
     for (int ii = 0; ii < 8; ++ii) {
@@ -45,17 +45,6 @@ uint8_t crc8_calc(uint8_t crc, unsigned char a, uint8_t poly)
     }
     return crc;
 }
-
-//uint8_t crc8_update(uint8_t crc, const void *data, uint32_t length, uint8_t poly)
-//{
-//    const uint8_t *p = (const uint8_t *)data;
-//    const uint8_t *pend = p + length;
-//
-//    for (; p != pend; p++) {
-//        crc = crc8_calc(crc, *p, poly);
-//    }
-//    return crc;
-//}
 
 // --- sender --- //
 #if (PI_MODE & PI_TX)
@@ -80,7 +69,7 @@ unsigned int piAccumulateMsg(void * msg_raw, uint8_t * buf) {
     bool id_sent = false;
     uint8_t id = *(msg++);
     uint8_t len = *(msg++) + 1 + 1; // one extra for id, one for checksum
-    uint8_t checksum = crc8_calc(0, id, PI_CRC8_POLYNOMIAL);
+    uint8_t checksum = crc8_calc_pi(0, id, PI_CRC8_POLYNOMIAL);
 
     while (len-- > 0) {
         uint8_t byte;
@@ -91,7 +80,7 @@ unsigned int piAccumulateMsg(void * msg_raw, uint8_t * buf) {
         } else if (len > 0) {
             // send message payload
             byte = *(msg++);
-            checksum = crc8_calc(checksum, byte, PI_CRC8_POLYNOMIAL);
+            checksum = crc8_calc_pi(checksum, byte, PI_CRC8_POLYNOMIAL);
         } else {
             // send checksum byte
             byte = checksum;
@@ -174,7 +163,7 @@ __attribute__((unused)) uint8_t piParse(pi_parse_states_t * p, uint8_t byte) {
         case PI_STX_FOUND:
             // parse id
             p->msgId = byte;
-            p->checksum = crc8_calc(0, byte, PI_CRC8_POLYNOMIAL);
+            p->checksum = crc8_calc_pi(0, byte, PI_CRC8_POLYNOMIAL);
             p->piState = PI_ID_FOUND;
             p->byteCount = 0;
             break;
