@@ -21,19 +21,19 @@
 fields:
   time_us: uint32_t
   # full ekf state
-  x: float
-  y: float
-  z: float
-  vx: float
-  vy: float
-  vz: float
-  qw: float
-  qx: float
-  qy: float
-  qz: float
-  ax_b: float
-  ay_b: float
-  az_b: float
-  p_b: float
-  q_b: float
-  r_b: float
+  x: int16_t
+  y: int16_t
+  z: int16_t
+  vx: int16_t
+  vy: int16_t
+  vz: int16_t
+  qw: int16_t
+  qx: int16_t
+  qy: int16_t
+  qz: int16_t
+  ax_b: int16_t
+  ay_b: int16_t
+  az_b: int16_t
+  p_b: int16_t
+  q_b: int16_t
+  r_b: int16_t
