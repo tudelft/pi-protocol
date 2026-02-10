@@ -30,3 +30,4 @@ fields:
   omega2: uint16_t  # betaflight numbering (1: RR, 2: FR, 3: RL, 4: FL)
   omega3: uint16_t
   omega4: uint16_t
+  mode: uint8_t
