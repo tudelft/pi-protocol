@@ -1,0 +1,33 @@
+# Copyright 2023 Till Blaha (Delft University of Technology)
+#
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License along
+# with this program.
+#
+# If not, see <https://www.gnu.org/licenses/>.
+
+# supported datatypes
+# (u)int8_t, (u)int16_t, (u)int32_t, (u)int64_t, float, double (double needs to be verified working)
+
+fields:
+  time_us: uint32_t
+  ned_x: float         # NED position x [m]
+  ned_y: float         # NED position y [m]
+  ned_z: float         # NED position z [m]
+  yaw: float           # yaw angle [deg]
+  armed: uint8_t
+  flight_mode: uint32_t
+  cell_voltage_cV: uint16_t  # getBatteryAverageCellVoltage(), units: 0.01V
+  mah_drawn: uint32_t        # getMAhDrawn(), units: mAh
+  esc_temp_0: int8_t         # ESC temperature motor 0 [deg C]
+  esc_temp_1: int8_t         # ESC temperature motor 1 [deg C]
+  esc_temp_2: int8_t         # ESC temperature motor 2 [deg C]
+  esc_temp_3: int8_t         # ESC temperature motor 3 [deg C]
