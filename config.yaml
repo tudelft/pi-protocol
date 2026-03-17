@@ -29,5 +29,5 @@ include_messages:
   OFFBOARD_POSE: { id: 10, mode: RXTX }
   OFFBOARD_POSE_COV: { id: 11, mode: RXTX }
   INTERCEPT: { id: 12, mode: RXTX }
-  TELEMETRY: { id: 13, mode: TX }
+  TELEMETRY: { id: 13, mode: RXTX }
 

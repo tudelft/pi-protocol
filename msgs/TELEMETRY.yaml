@@ -19,10 +19,10 @@
 
 fields:
   time_us: uint32_t
-  ned_x: float         # NED position x [m]
-  ned_y: float         # NED position y [m]
-  ned_z: float         # NED position z [m]
-  yaw: float           # yaw angle [deg]
+  ned_x: float         # NED target position x [m]
+  ned_y: float         # NED target position y [m]
+  ned_z: float         # NED target position z [m]
+  yaw: float           # yaw target angle [deg]
   armed: uint8_t
   flight_mode: uint32_t
   cell_voltage_cV: uint16_t  # getBatteryAverageCellVoltage(), units: 0.01V
