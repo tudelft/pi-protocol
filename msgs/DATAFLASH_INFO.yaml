@@ -1,0 +1,7 @@
+# Dataflash info response: FC -> Orin
+# Sent in response to DATAFLASH_CMD with cmd=0
+
+fields:
+  ready: uint8_t
+  total_bytes: uint32_t
+  used_bytes: uint32_t
