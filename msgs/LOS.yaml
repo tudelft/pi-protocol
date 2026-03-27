@@ -14,21 +14,12 @@
 #
 # If not, see <https://www.gnu.org/licenses/>.
 
-protocol_version: 2.0.0
-global_mode: RXTX
-include_messages:
-  IMU: { id: 1, mode: RXTX }
-  FAKE_GPS: { id: 2, mode: RXTX }
-  EXTERNAL_POSE: { id: 3, mode: RXTX }
-  POS_SETPOINT: { id: 4, mode: RXTX }
-  HIL_IN: { id: 5, mode: RXTX }
-  HIL_OUT: { id: 6, mode: RXTX }
-  VIO_POSE: { id: 7, mode: RXTX }
-  KEYBOARD: { id: 8, mode: RXTX }
-  EKF_INPUTS: { id: 9, mode: RXTX }
-  OFFBOARD_POSE: { id: 10, mode: RXTX }
-  OFFBOARD_POSE_COV: { id: 11, mode: RXTX }
-  INTERCEPT: { id: 12, mode: RXTX }
-  TELEMETRY: { id: 13, mode: RXTX }
-  LOS: { id: 14, mode: RXTX }
+# supported datatypes
+# (u)int8_t, (u)int16_t, (u)int32_t, (u)int64_t, float, double (double needs to be verified working)
 
+fields:
+  time_us: uint32_t
+  los_angle_0: float # line-of-sight angle 0
+  los_angle_1: float # line-of-sight angle 1
+  los_rate_0: float  # line-of-sight rate 0
+  los_rate_1: float  # line-of-sight rate 1
