@@ -1,0 +1,10 @@
+# Dataflash command: Orin -> FC
+# cmd: 0 = get summary, 1 = read chunk, 2 = erase
+# For cmd=1: offset and length specify the chunk to read
+# flags: bit 0 = reserved for future use
+
+fields:
+  cmd: uint8_t
+  offset: uint32_t
+  length: uint16_t
+  flags: uint8_t

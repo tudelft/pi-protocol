@@ -30,3 +30,5 @@ include_messages:
   OFFBOARD_POSE_COV: { id: 11, mode: RXTX }
   FC_MODE: { id: 12, mode: RXTX }
   OFFACT: { id: 13, mode: RXTX }
+  DATAFLASH_CMD: { id: 14, mode: RXTX }
+  DATAFLASH_INFO: { id: 15, mode: RXTX }
