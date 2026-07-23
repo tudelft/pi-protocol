@@ -1,0 +1,10 @@
+# Copyright 2026 Aderik Verraest (Delft University of Technology)
+#
+# FC->Orin confirmation for NN_SELECT: ok=1 if the loaded slot's hash matched the requested hash
+# (controller loaded), ok=0 on mismatch (not engaged). slot_id/hash echo the request.
+
+fields:
+  time_us: uint32_t
+  ok: uint8_t
+  slot_id: uint8_t
+  hash: uint32_t

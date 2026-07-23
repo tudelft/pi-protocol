@@ -17,7 +17,7 @@
 # supported datatypes
 # uint8_t, uint16_t, uint32_t, uint64_t, float, double
 
-# 4  +  2 * 6  +  2 * 4  =  24 bytes per message  => 240 / 921600 = 0.26ms wire delay
+# 4  +  2 * 6  +  2 * 4  +  2 * 4  =  32 bytes per message  => 320 / 921600 = 0.35ms wire delay
 fields:
   time_us: uint32_t
   x: int16_t  # acc in m/s/s  =  ( this int16_t ) * ( 9.81 / 2048 )
@@ -31,3 +31,9 @@ fields:
   omega3: uint16_t
   omega4: uint16_t
   mode: uint8_t
+  # Two-rate SkyDreamer: MLP_a motor output u in [-1,1] = ( this int16_t ) / 32767. The Orin averages
+  # these over the camera frame to form obs_vec fb_u1..4. 0 when two-rate offact is not running.
+  u1: int16_t
+  u2: int16_t
+  u3: int16_t
+  u4: int16_t

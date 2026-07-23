@@ -32,3 +32,6 @@ include_messages:
   OFFACT: { id: 13, mode: RXTX }
   DATAFLASH_CMD: { id: 14, mode: RXTX }
   DATAFLASH_INFO: { id: 15, mode: RXTX }
+  OFFCTBR: { id: 16, mode: RXTX }
+  NN_SELECT: { id: 17, mode: RXTX }
+  NN_SELECT_CONFIRM: { id: 18, mode: RXTX }

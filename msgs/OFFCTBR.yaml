@@ -1,0 +1,43 @@
+# Copyright 2026 Aderik Verraest (Delft University of Technology)
+#
+# Orin->FC two-rate SkyDreamer: held CTBR setpoint (ctbr0..3, normalized [-1,1])
+# and 32-dim FC context (ctx0..31 = MLP_proj(deter)). Consumed as float[4]/float[32].
+
+fields:
+  time_us: uint32_t
+  ctbr0: float
+  ctbr1: float
+  ctbr2: float
+  ctbr3: float
+  ctx0: float
+  ctx1: float
+  ctx2: float
+  ctx3: float
+  ctx4: float
+  ctx5: float
+  ctx6: float
+  ctx7: float
+  ctx8: float
+  ctx9: float
+  ctx10: float
+  ctx11: float
+  ctx12: float
+  ctx13: float
+  ctx14: float
+  ctx15: float
+  ctx16: float
+  ctx17: float
+  ctx18: float
+  ctx19: float
+  ctx20: float
+  ctx21: float
+  ctx22: float
+  ctx23: float
+  ctx24: float
+  ctx25: float
+  ctx26: float
+  ctx27: float
+  ctx28: float
+  ctx29: float
+  ctx30: float
+  ctx31: float
