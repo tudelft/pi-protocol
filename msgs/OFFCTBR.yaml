@@ -2,6 +2,8 @@
 #
 # Orin->FC two-rate SkyDreamer: held CTBR setpoint (ctbr0..3, normalized [-1,1])
 # and 32-dim FC context (ctx0..31 = MLP_proj(deter)). Consumed as float[4]/float[32].
+# CTBR4P: 4 extra per-axis priority logits (prio0..3, normalized [-1,1]) that the FC
+# feeds as obs 11..14; zero (and ignored by a 43-in FC) for plain CTBR.
 
 fields:
   time_us: uint32_t
@@ -41,3 +43,7 @@ fields:
   ctx29: float
   ctx30: float
   ctx31: float
+  prio0: float
+  prio1: float
+  prio2: float
+  prio3: float
