@@ -17,7 +17,7 @@
 # supported datatypes
 # uint8_t, uint16_t, uint32_t, uint64_t, float, double
 
-# 4  +  2 * 6  +  2 * 4  +  2 * 4  =  32 bytes per message  => 320 / 921600 = 0.35ms wire delay
+# 4 + 2*6 + 2*4 + 1 + 2*4 = 33 bytes per message  => 330 / 921600 = 0.36ms wire delay
 fields:
   time_us: uint32_t
   x: int16_t  # acc in m/s/s  =  ( this int16_t ) * ( 9.81 / 2048 )
