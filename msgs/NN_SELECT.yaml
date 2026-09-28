@@ -1,10 +1,11 @@
 # Copyright 2026 Aderik Verraest (Delft University of Technology)
 #
-# Orin->FC: select the neural controller. offact_mode picks the offact/two-rate path;
-# slot_id (0..10) is the compiled slot; hash is the two-rate network identity (0 if n/a).
+# Orin->FC: select the neural controller. mode: 0 legacy state-based net on the FC, 1 offact (Orin
+# sends motor commands, slot/hash unused), 2 CTBR (Orin sends CTBR, board net in slot_id).
+# slot_id (1..9) is the compiled slot; hash is the network identity (required for CTBR, 0 = no check).
 
 fields:
   time_us: uint32_t
-  offact_mode: uint8_t
+  mode: uint8_t
   slot_id: uint8_t
   hash: uint32_t

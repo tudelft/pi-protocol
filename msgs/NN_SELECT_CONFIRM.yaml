@@ -1,10 +1,12 @@
 # Copyright 2026 Aderik Verraest (Delft University of Technology)
 #
-# FC->Orin confirmation for NN_SELECT: ok=1 if the loaded slot's hash matched the requested hash
-# (controller loaded), ok=0 on mismatch (not engaged). slot_id/hash echo the request.
+# FC->Orin reply to NN_SELECT. status: 0 ok (controller loaded), 1 unknown mode, 2 slot not in
+# 1..9, 3 hash mismatch, 4 CTBR select with hash 0, 5 net too big for the FC fast-RAM pool.
+# slot_id/hash echo the request; fc_hash is the hash of the net the FC actually has loaded (0 if none).
 
 fields:
   time_us: uint32_t
-  ok: uint8_t
+  status: uint8_t
   slot_id: uint8_t
   hash: uint32_t
+  fc_hash: uint32_t
