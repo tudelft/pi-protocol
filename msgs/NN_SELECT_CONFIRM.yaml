@@ -1,8 +1,9 @@
 # Copyright 2026 Aderik Verraest (Delft University of Technology)
 #
-# FC->Orin reply to NN_SELECT. status: 0 ok (controller loaded), 1 unknown mode, 2 slot not in
-# 1..9, 3 hash mismatch, 4 CTBR select with hash 0, 5 net too big for the FC fast-RAM pool.
-# slot_id/hash echo the request; fc_hash is the hash of the net the FC actually has loaded (0 if none).
+# FC->Orin reply to NN_SELECT. status: 0 ok (switched, or already selected), 1 unknown mode, 2 slot
+# not in 1..9, 3 hash mismatch, 4 CTBR select with hash 0, 5 net too big for the FC fast-RAM pool,
+# 6 busy (a controller is engaged). On any rejection the FC keeps its previous selection.
+# slot_id/hash echo the request; fc_hash is the hash of the net compiled into slot_id (0 if none).
 
 fields:
   time_us: uint32_t
