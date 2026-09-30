@@ -1,0 +1,62 @@
+# Copyright 2026 Till Blaha (Delft University of Technology)
+#
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Lesser General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License along
+# with this program.
+#
+# If not, see <https://www.gnu.org/licenses/>.
+
+# supported datatypes
+# uint8_t, uint16_t, uint32_t, uint64_t, float, double
+
+# One chunk of a larger 64-float vector (e.g. a neural network input).
+# 64 floats = 256 bytes, 1 byte over the 255 byte PI_MSG_MAX_PAYLOAD_LEN, so
+# it can't fit in a single message. The generator has no array field type,
+# so the chunk itself is 32 named float fields (32 * 4 = 128 bytes + 1 byte
+# index = 129 bytes payload).
+#
+# Send this message 2 times with chunk_index = 0, 1 to transmit the full
+# 64-float vector; on the receiving end, place f0..f31 of message
+# chunk_index=i at vector offset i*32 .. i*32+31.
+fields:
+  chunk_index: uint8_t  # 0..1
+  f0: float
+  f1: float
+  f2: float
+  f3: float
+  f4: float
+  f5: float
+  f6: float
+  f7: float
+  f8: float
+  f9: float
+  f10: float
+  f11: float
+  f12: float
+  f13: float
+  f14: float
+  f15: float
+  f16: float
+  f17: float
+  f18: float
+  f19: float
+  f20: float
+  f21: float
+  f22: float
+  f23: float
+  f24: float
+  f25: float
+  f26: float
+  f27: float
+  f28: float
+  f29: float
+  f30: float
+  f31: float

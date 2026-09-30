@@ -28,3 +28,4 @@ include_messages:
   EKF_INPUTS: { id: 9, mode: RXTX }
   OFFBOARD_POSE: { id: 10, mode: RXTX }
   OFFBOARD_POSE_COV: { id: 11, mode: RXTX }
+  NN_INPUT_CHUNK: { id: 12, mode: RXTX }
