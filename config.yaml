@@ -35,3 +35,4 @@ include_messages:
   OFFCTBR: { id: 16, mode: RXTX }
   NN_SELECT: { id: 17, mode: RXTX }
   NN_SELECT_CONFIRM: { id: 18, mode: RXTX }
+  OFFCTBRN: { id: 19, mode: RXTX }
