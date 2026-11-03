@@ -1,0 +1,25 @@
+# Copyright 2026 Aderik Verraest (Delft University of Technology)
+#
+# FC firmware revision (tudelft/dronerace#601). Request and reply use the same id:
+# - Orin->FC (request): time_us = Orin time, all other fields 0.
+# - FC->Orin (reply): time_us echoes the request; the other fields describe the running firmware.
+# git_rev0..3: shortGitRevision as 16 ASCII bytes, NUL padded (e.g. "10c969f02+dirty"). The words
+#   are the raw bytes in memory order (both ends little-endian, like every other field): copy the
+#   16 bytes starting at git_rev0 with memcpy, don't interpret the words as numbers.
+# dirty: 1 if the firmware was built from a tree with uncommitted changes, else 0.
+# build_date: YYYYMMDD, build_time: HHMMSS (local time of the build machine), 0 if unknown.
+# target0..3: targetName as 16 ASCII bytes, NUL padded (e.g. "MATEKH743").
+
+fields:
+  time_us: uint32_t
+  git_rev0: uint32_t
+  git_rev1: uint32_t
+  git_rev2: uint32_t
+  git_rev3: uint32_t
+  dirty: uint8_t
+  build_date: uint32_t
+  build_time: uint32_t
+  target0: uint32_t
+  target1: uint32_t
+  target2: uint32_t
+  target3: uint32_t

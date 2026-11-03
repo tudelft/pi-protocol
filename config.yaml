@@ -36,3 +36,5 @@ include_messages:
   NN_SELECT: { id: 17, mode: RXTX }
   NN_SELECT_CONFIRM: { id: 18, mode: RXTX }
   OFFCTBRN: { id: 19, mode: RXTX }
+  # 20: reserved for DETECTION (tudelft/pi-protocol#3)
+  FC_VERSION: { id: 21, mode: RXTX }
