@@ -17,6 +17,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include "../src/pi-protocol.h"
 #include "../src/pi-messages.h"
 
@@ -156,6 +157,33 @@ int main(int argc, char** argv) {
 #endif // ifdef PI_STATS
 
 #endif // if PI_MODE & PI_RX
+
+#if (PI_MODE & PI_RXTX) == PI_RXTX && (PI_MSG_FC_VERSION_MODE & PI_RXTX) == PI_RXTX
+    // FC_VERSION round trip: the ASCII fields survive packing, escaping and parsing byte for byte.
+    {
+        const char rev[16] = "10c969f02+dirty";
+        const char target[16] = "MATEKH743";
+        memset(&piMsgFcVersionTx.time_us, 0, PI_MSG_FC_VERSION_PAYLOAD_LEN);
+        piMsgFcVersionTx.time_us = 123456;
+        memcpy(&piMsgFcVersionTx.git_rev0, rev, sizeof(rev));
+        piMsgFcVersionTx.dirty = 1;
+        piMsgFcVersionTx.build_date = 20261103;
+        piMsgFcVersionTx.build_time = 123456;
+        memcpy(&piMsgFcVersionTx.target0, target, sizeof(target));
+        printf("\nmsg FC_VERSION: TX: ");
+        piSendMsg(&piMsgFcVersionTx, &dummyWriter);
+        printf("\n");
+        if (!piMsgFcVersionRx
+            || memcmp(&piMsgFcVersionRx->git_rev0, rev, sizeof(rev)) != 0
+            || memcmp(&piMsgFcVersionRx->target0, target, sizeof(target)) != 0
+            || piMsgFcVersionRx->time_us != 123456 || piMsgFcVersionRx->dirty != 1
+            || piMsgFcVersionRx->build_date != 20261103 || piMsgFcVersionRx->build_time != 123456) {
+            printf("FC_VERSION round trip FAILED\n");
+            return 1;
+        }
+        printf("FC_VERSION round trip OK\n");
+    }
+#endif
 
     return 0;
 }
